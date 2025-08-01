@@ -29,7 +29,7 @@ import { registerFormSchema } from "~/lib/validation-schemas";
 
 const formSchema = registerFormSchema;
 
-export default function RegisterPreview() {
+export default function RegisterForm() {
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {

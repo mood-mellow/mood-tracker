@@ -1,11 +1,11 @@
 import type { Meta, StoryObj } from "@storybook/nextjs";
 import { Toaster } from "sonner";
-import RegisterPreview from "~/components/signup";
+import LoginForm from "~/components/loginForm";
 import React from "react";
 
-const meta: Meta<typeof RegisterPreview> = {
-  title: "Components/RegisterPreview",
-  component: RegisterPreview,
+const meta: Meta<typeof LoginForm> = {
+  title: "Components/LoginForm",
+  component: LoginForm,
   tags: ["autodocs"],
   parameters: {
     layout: "centered",
@@ -22,20 +22,9 @@ const meta: Meta<typeof RegisterPreview> = {
         }),
       ),
   ],
-} satisfies Meta<typeof RegisterPreview>;
+} satisfies Meta<typeof LoginForm>;
 
 export default meta;
 type Story = StoryObj<typeof meta>;
 
 export const Default: Story = {};
-
-export const WithToaster: Story = {
-  parameters: {
-    docs: {
-      description: {
-        story:
-          "Register form with toast notifications for form submission feedback.",
-      },
-    },
-  },
-};
