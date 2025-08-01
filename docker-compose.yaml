@@ -1,0 +1,26 @@
+services:
+  web:
+    build: .
+    container_name: mood-tracker-frontend
+    ports:
+      - "3000:3000" # Next.js
+    volumes:
+      - .:/app
+      - /app/node_modules # avoid overwriting node_modules with host's empty folder
+    environment:
+      - NODE_ENV=development
+      - WATCHPACK_POLLING=true # helps with hot reload in Docker
+    command: npm run dev
+
+  storybook:
+    build: .
+    container_name: storybook-dev
+    ports:
+      - "6006:6006"
+    volumes:
+      - .:/app
+      - /app/node_modules
+    environment:
+      - NODE_ENV=development
+      - WATCHPACK_POLLING=true
+    command: npm run storybook -- --no-open
