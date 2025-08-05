@@ -24,7 +24,7 @@ import {
 } from "~/components/ui/card";
 import { Input } from "~/components/ui/input";
 import { PasswordInput } from "~/components/ui/password-input";
-import { signUp } from "aws-amplify/auth";
+import { AuthError, signUp } from "aws-amplify/auth";
 import { useMutation } from "@tanstack/react-query";
 
 import { registerFormSchema } from "~/lib/validation-schemas";
@@ -66,8 +66,30 @@ export default function RegisterForm() {
       // Handle next step (e.g., redirect to verification page)
     },
     onError: (error) => {
-      console.error("Registration error:", error);
-      toast.error("Failed to register. Please try again.");
+      if (error instanceof AuthError) {
+        switch (error.name) {
+          case "UsernameExistsException":
+            toast.error("An account with this email already exists.");
+            break;
+          case "InvalidPasswordException":
+            toast.error("Password requirements not met", {
+              description:
+                "Password must be at least 8 characters with uppercase, lowercase, numbers, and special characters.",
+            });
+            break;
+          case "InvalidParameterException":
+            toast.error("Invalid email format", {
+              description: "Please enter a valid email address.",
+            });
+            break;
+          default:
+            toast.error("Registration failed", {
+              description: error.message,
+            });
+        }
+      } else {
+        toast.error("Failed to register. Please try again.");
+      }
     },
   });
 
