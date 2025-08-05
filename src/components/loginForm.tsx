@@ -24,10 +24,19 @@ import {
 } from "~/components/ui/card";
 import { Input } from "~/components/ui/input";
 import { PasswordInput } from "~/components/ui/password-input";
-
+import { AuthError, signIn } from "aws-amplify/auth";
 import { loginFormSchema } from "~/lib/validation-schemas";
+import { useMutation } from "@tanstack/react-query";
 
 const formSchema = loginFormSchema;
+
+async function loginUser(values: z.infer<typeof formSchema>) {
+  const { isSignedIn, nextStep } = await signIn({
+    username: values.email,
+    password: values.password,
+  });
+  return { nextStep, values, isSignedIn };
+}
 
 export default function LoginForm() {
   const form = useForm<z.infer<typeof formSchema>>({
@@ -38,19 +47,24 @@ export default function LoginForm() {
     },
   });
 
+  const loginMutation = useMutation({
+    mutationFn: loginUser,
+    onSuccess: (data) => {
+      if (data.isSignedIn) {
+        toast.success("Login successful!");
+        console.log("Next step:", data.nextStep);
+      }
+    },
+    onError: (error) => {
+      toast.error("Failed to login.", {
+        description: error.message,
+      });
+    },
+  });
+
   async function onSubmit(values: z.infer<typeof formSchema>) {
-    try {
-      // Assuming an async login function
-      console.log(values);
-      toast(
-        <pre className="mt-2 w-[340px] rounded-md bg-slate-950 p-4">
-          <code className="text-white">{JSON.stringify(values, null, 2)}</code>
-        </pre>,
-      );
-    } catch (error) {
-      console.error("Form submission error", error);
-      toast.error("Failed to submit the form. Please try again.");
-    }
+    console.log("login form submit event triggered");
+    loginMutation.mutate(values);
   }
 
   return (
@@ -111,11 +125,13 @@ export default function LoginForm() {
                     </FormItem>
                   )}
                 />
-                <Button type="submit" className="w-full">
+                <Button
+                  type="submit"
+                  className="w-full"
+                  disabled={loginMutation.isPending}
+                  loading={loginMutation.isPending}
+                >
                   Login
-                </Button>
-                <Button variant="outline" className="w-full">
-                  Login with Google
                 </Button>
               </div>
             </form>

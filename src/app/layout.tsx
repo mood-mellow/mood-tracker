@@ -3,6 +3,7 @@ import "~/styles/globals.css";
 import { type Metadata } from "next";
 import { AuthProvider } from "~/components/authProvider";
 import { QueryProvider } from "~/components/queryProvider";
+import { Toaster } from "sonner";
 
 export const metadata: Metadata = {
   title: "Mood Tracker",
@@ -18,6 +19,7 @@ export default function RootLayout({
       <QueryProvider>
         <AuthProvider>
           <body>{children}</body>
+          <Toaster position="top-right" richColors />
         </AuthProvider>
       </QueryProvider>
     </html>
