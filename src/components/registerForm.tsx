@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { z } from "zod";
+import { type z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
