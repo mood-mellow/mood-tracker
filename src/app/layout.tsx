@@ -1,7 +1,9 @@
 import "~/styles/globals.css";
 
 import { type Metadata } from "next";
-import { Geist } from "next/font/google";
+import { AuthProvider } from "~/components/authProvider";
+import { QueryProvider } from "~/components/queryProvider";
+import { Toaster } from "sonner";
 
 export const metadata: Metadata = {
   title: "Mood Tracker",
@@ -9,17 +11,17 @@ export const metadata: Metadata = {
   icons: [{ rel: "icon", url: "/favicon.ico" }],
 };
 
-const geist = Geist({
-  subsets: ["latin"],
-  variable: "--font-geist-sans",
-});
-
 export default function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <html lang="en" className={`${geist.variable}`}>
-      <body>{children}</body>
+    <html lang="en">
+      <QueryProvider>
+        <AuthProvider>
+          <body>{children}</body>
+          <Toaster position="top-right" richColors />
+        </AuthProvider>
+      </QueryProvider>
     </html>
   );
 }
