@@ -24,10 +24,26 @@ import {
 } from "~/components/ui/card";
 import { Input } from "~/components/ui/input";
 import { PasswordInput } from "~/components/ui/password-input";
+import { signUp } from "aws-amplify/auth";
+import { useMutation } from "@tanstack/react-query";
 
 import { registerFormSchema } from "~/lib/validation-schemas";
 
 const formSchema = registerFormSchema;
+
+async function signUpUser(values: z.infer<typeof formSchema>) {
+  const { nextStep } = await signUp({
+    username: values.email,
+    password: values.password,
+    options: {
+      userAttributes: {
+        email: values.email,
+        preferred_username: values.name,
+      },
+    },
+  });
+  return { nextStep, values };
+}
 
 export default function RegisterForm() {
   const form = useForm<z.infer<typeof formSchema>>({
@@ -40,20 +56,24 @@ export default function RegisterForm() {
     },
   });
 
-  async function onSubmit(values: z.infer<typeof formSchema>) {
-    try {
-      // Assuming an async registration function
-      console.log("test");
-      console.log(values);
-      toast(
-        <pre className="mt-2 w-[340px] rounded-md bg-slate-950 p-4">
-          <code className="text-white">{JSON.stringify(values, null, 2)}</code>
-        </pre>,
+  const signUpMutation = useMutation({
+    mutationFn: signUpUser,
+    onSuccess: (data) => {
+      toast.success(
+        "Registration successful! Please check your email for verification.",
       );
-    } catch (error) {
-      console.error("Form submission error", error);
-      toast.error("Failed to submit the form. Please try again.");
-    }
+      console.log("Next step:", data.nextStep);
+      // Handle next step (e.g., redirect to verification page)
+    },
+    onError: (error) => {
+      console.error("Registration error:", error);
+      toast.error("Failed to register. Please try again.");
+    },
+  });
+
+  async function onSubmit(values: z.infer<typeof formSchema>) {
+    console.log("Form submit event triggered");
+    signUpMutation.mutate(values);
   }
 
   return (
@@ -153,7 +173,12 @@ export default function RegisterForm() {
                   )}
                 />
 
-                <Button type="submit" className="w-full">
+                <Button
+                  type="submit"
+                  className="w-full"
+                  disabled={signUpMutation.isPending}
+                  loading={signUpMutation.isPending}
+                >
                   Register
                 </Button>
               </div>
