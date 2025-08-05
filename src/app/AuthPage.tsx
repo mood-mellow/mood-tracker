@@ -1,9 +1,13 @@
 "use client";
 
-import { Toaster } from "sonner";
 import LoginForm from "~/components/loginForm";
 import RegisterForm from "~/components/registerForm";
 import { Amplify } from "aws-amplify";
+import { ConfirmRegisterForm } from "~/components/confirmRegisterForm";
+import { useAuthenticator } from "@aws-amplify/ui-react";
+import { Button } from "~/components/ui/button";
+import { signOut } from "aws-amplify/auth";
+import { toast } from "sonner";
 
 Amplify.configure({
   Auth: {
@@ -36,11 +40,28 @@ Amplify.configure({
 });
 
 export default function AuthPage() {
+  const { authStatus } = useAuthenticator((context) => [context.authStatus]);
+
   return (
     <main className="flex items-center justify-center">
       <RegisterForm />
       <LoginForm />
-      <Toaster position="top-right" richColors />
+      <ConfirmRegisterForm />
+      {authStatus === "authenticated" && (
+        <Button
+          onClick={async () => {
+            try {
+              await signOut();
+              toast.success("Signed out successfully");
+            } catch (error) {
+              toast.error("Failed to sign out");
+              console.error("Sign out error:", error);
+            }
+          }}
+        >
+          Sign out
+        </Button>
+      )}
     </main>
   );
 }
