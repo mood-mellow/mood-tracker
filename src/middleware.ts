@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from "next/server";
+import { type NextRequest, NextResponse } from "next/server";
 import { type AmplifyServer } from "aws-amplify/adapter-core";
 import { runWithAmplifyServerContext } from "./lib/amplifyServerUtils";
 import { fetchAuthSession } from "aws-amplify/auth/server";
