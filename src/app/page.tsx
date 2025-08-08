@@ -1,12 +1,11 @@
+import Link from "next/link";
 import { Toaster } from "sonner";
-import AuthPage from "./AuthPage";
 
 export default function HomePage() {
   return (
     <main className="flex items-center justify-center">
-      <AuthPage />
+      <Link href={"/login"}>Go to Login/Signup</Link>
       <Toaster position="top-right" richColors />
-      {/* <Hero45 heading="The Mood Tracker built by REDACTED" /> */}
     </main>
   );
 }
