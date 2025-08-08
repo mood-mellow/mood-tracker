@@ -1,34 +1,50 @@
 import { NextRequest, NextResponse } from "next/server";
-import { fetchAuthSession } from "aws-amplify/auth";
+import { type AmplifyServer } from "aws-amplify/adapter-core";
+import { runWithAmplifyServerContext } from "./lib/amplifyServerUtils";
+import { fetchAuthSession } from "aws-amplify/auth/server";
 
 // 1. Specify protected and public routes
 const protectedRoutes = ["/dashboard"];
 const publicRoutes = ["/", "/login"];
 
-export default async function middleware(req: NextRequest) {
+export default async function middleware(request: NextRequest) {
+  const response = NextResponse.next();
+
   // 2. Check if the current route is protected or public
-  const path = req.nextUrl.pathname;
+  const path = request.nextUrl.pathname;
   const isProtectedRoute = protectedRoutes.includes(path);
   const isPublicRoute = publicRoutes.includes(path);
 
-  // 3. Decrypt the session from the cookie
-  const authCookies = req.cookies
-    .getAll()
-    .filter((cookie) => cookie.name.includes("CognitoIdentityServiceProvider"));
-  const isAuthenticated = authCookies.length > 0;
+  // 3. Validate auth session with server context
+  const isAuthenticated = await runWithAmplifyServerContext({
+    nextServerContext: { request, response },
+    operation: async (contextSpec: AmplifyServer.ContextSpec) => {
+      try {
+        const session = await fetchAuthSession(contextSpec);
+        return (
+          session.tokens?.accessToken !== undefined &&
+          session.tokens?.idToken !== undefined
+        );
+      } catch (error) {
+        console.log(error);
+        return false;
+      }
+    },
+  });
+  console.log("auth:", isAuthenticated);
 
   // 4. Redirect to /login if the user is not authenticated
   if (isProtectedRoute && !isAuthenticated) {
-    return NextResponse.redirect(new URL("/", req.nextUrl));
+    return NextResponse.redirect(new URL("/", request.nextUrl));
   }
 
   // 5. Redirect to /dashboard if the user is authenticated
   if (
     isPublicRoute &&
     isAuthenticated &&
-    !req.nextUrl.pathname.startsWith("/dashboard")
+    !request.nextUrl.pathname.startsWith("/dashboard")
   ) {
-    return NextResponse.redirect(new URL("/dashboard", req.nextUrl));
+    return NextResponse.redirect(new URL("/dashboard", request.nextUrl));
   }
 
   return NextResponse.next();
