@@ -24,9 +24,10 @@ import {
 } from "~/components/ui/card";
 import { Input } from "~/components/ui/input";
 import { PasswordInput } from "~/components/ui/password-input";
-import { AuthError, signIn } from "aws-amplify/auth";
+import { signIn } from "aws-amplify/auth";
 import { loginFormSchema } from "~/lib/validation-schemas";
 import { useMutation } from "@tanstack/react-query";
+import { useRouter } from "next/navigation";
 
 const formSchema = loginFormSchema;
 
@@ -39,6 +40,7 @@ async function loginUser(values: z.infer<typeof formSchema>) {
 }
 
 export default function LoginForm() {
+  const router = useRouter();
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -53,6 +55,7 @@ export default function LoginForm() {
       if (data.isSignedIn) {
         toast.success("Login successful!");
         console.log("Next step:", data.nextStep);
+        router.push("/dashboard");
       }
     },
     onError: (error) => {
