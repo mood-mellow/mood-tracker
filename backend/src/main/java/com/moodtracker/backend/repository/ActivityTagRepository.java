@@ -8,5 +8,5 @@ import java.util.Optional;
 
 @Repository
 public interface ActivityTagRepository extends JpaRepository<ActivityTag, Long> {
-    Optional<ActivityTag> findByName(String name);
+    Optional<ActivityTag> findByLabel(String label);
 }
