@@ -12,15 +12,42 @@ services:
       - WATCHPACK_POLLING=true # helps with hot reload in Docker
     command: npm run dev
 
-  storybook:
-    build: .
-    container_name: storybook-dev
+  backend:
+    build:
+      context: .
+      dockerfile: backend/Dockerfile
+    container_name: springboot-backend
     ports:
-      - "6006:6006"
-    volumes:
-      - .:/app
-      - /app/node_modules
+      - "8080:8080"
     environment:
-      - NODE_ENV=development
-      - WATCHPACK_POLLING=true
-    command: npm run storybook -- --no-open
+      DB_URL: jdbc:postgresql://db:5432/mydatabase
+      DB_USERNAME: myuser
+      DB_PASSWORD: mypassword
+      SPRING_JPA_HIBERNATE_DDL_AUTO: update
+    depends_on:
+      - db
+
+  db:
+    image: postgres:15-alpine
+    container_name: postgres-db
+    environment:
+      POSTGRES_DB: mydatabase
+      POSTGRES_USER: myuser
+      POSTGRES_PASSWORD: mypassword
+    ports:
+      - "5432:5432"
+    # volumes:
+    #   - pgdata:/var/lib/postgresql/data
+
+  # storybook:
+  #   build: .
+  #   container_name: storybook-dev
+  #   ports:
+  #     - "6006:6006"
+  #   volumes:
+  #     - .:/app
+  #     - /app/node_modules
+  #   environment:
+  #     - NODE_ENV=development
+  #     - WATCHPACK_POLLING=true
+  #   command: npm run storybook -- --no-open
