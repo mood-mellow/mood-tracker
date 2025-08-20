@@ -1,29 +1,171 @@
-# Create T3 App
+# Mood Tracker
 
-This is a [T3 Stack](https://create.t3.gg/) project bootstrapped with `create-t3-app`.
+A full-stack mood tracking application built with Next.js, Spring Boot, and PostgreSQL.
 
-## What's next? How do I make an app with this?
+## 🏗️ Architecture
 
-We try to keep this project as simple as possible, so you can start with just the scaffolding we set up for you, and add additional things later when they become necessary.
+- **Frontend**: Next.js with TypeScript, Tailwind CSS, ShadCN
+- **Backend**: Spring Boot
+- **Database**: PostgreSQL
+- **Authentication**: AWS Cognito
+- **Containerization**: Docker & Docker Compose
 
-If you are not familiar with the different technologies used in this project, please refer to the respective docs. If you still are in the wind, please join our [Discord](https://t3.gg/discord) and ask for help.
+## 🚀 Quick Start
 
-- [Next.js](https://nextjs.org)
-- [NextAuth.js](https://next-auth.js.org)
-- [Prisma](https://prisma.io)
-- [Drizzle](https://orm.drizzle.team)
-- [Tailwind CSS](https://tailwindcss.com)
-- [tRPC](https://trpc.io)
+### Prerequisites
 
-## Learn More
+- Docker and Docker Compose
+- Node.js 20+ (for local development)
+- Java 21+ (for local development)
+- Gradle 8+ (or use included wrapper)
 
-To learn more about the [T3 Stack](https://create.t3.gg/), take a look at the following resources:
+### Setup
 
-- [Documentation](https://create.t3.gg/)
-- [Learn the T3 Stack](https://create.t3.gg/en/faq#what-learning-resources-are-currently-available) — Check out these awesome tutorials
+1. **Clone the repository**
 
-You can check out the [create-t3-app GitHub repository](https://github.com/t3-oss/create-t3-app) — your feedback and contributions are welcome!
+   ```bash
+   git clone <repository-url>
+   cd mood-tracker
+   ```
 
-## How do I deploy this?
+2. **Environment Configuration**
 
-Follow our deployment guides for [Vercel](https://create.t3.gg/en/deployment/vercel), [Netlify](https://create.t3.gg/en/deployment/netlify) and [Docker](https://create.t3.gg/en/deployment/docker) for more information.
+   ```bash
+   cp .env.example .env
+   # Edit .env with your AWS Amplify configuration
+   ```
+
+3. **Start the application**
+   ```bash
+   docker compose up --build
+   ```
+
+## 🔗 Services
+
+| Service     | URL                   | Description             |
+| ----------- | --------------------- | ----------------------- |
+| Frontend    | http://localhost:3000 | Next.js application     |
+| Backend API | http://localhost:8080 | Spring Boot REST API    |
+| Database    | http://localhost:5432 | PostgreSQL database     |
+| pgAdmin     | http://localhost:5050 | Database administration |
+
+### PgAdmin Access
+
+- **Email**: admin@example.com
+- **Password**: admin
+
+## 📁 Project Structure
+
+```
+mood-tracker/
+├── src/                   # Next.js frontend
+├── Dockerfile             # Frontend container
+├─┬ backend/               # Spring Boot backend
+│ └── backend/Dockerfile   # Backend container
+├── docker-compose.yaml    # Container orchestration
+└── README.md
+```
+
+## 🛠️ Development
+
+### 🐳 Docker Compose (Recommended)
+
+The Docker Compose configs will set up everything needed for development. This includes:
+
+- Next.js frontend
+- Springboot backend
+- PostgreSQL Database
+- pgAdmin database administration
+
+```bash
+# Start all services
+docker compose up
+
+# Rebuild and start
+docker compose up --build
+
+# Stop services
+docker compose down
+
+# Remove volumes (reset database)
+docker compose down -v
+```
+
+### Frontend Development
+
+```bash
+npm install
+npm run dev
+```
+
+### Backend Development
+
+```bash
+cd backend
+
+# Build the project
+gradle build
+
+# Run the project
+gradle bootRun
+```
+
+### Database Commands
+
+```bash
+# Reset database
+docker compose down -v # -v flag removes volumes and networks as well
+docker compose up db
+
+# View logs
+docker compose logs -f backend
+```
+
+## 🔐 Authentication
+
+This app uses AWS Cognito for authentication through the Amplify Auth npm library.
+
+## 📊 Features
+
+- User authentication with AWS Cognito
+- Mood entry tracking
+- RESTful API with Spring Boot
+- Responsive UI with Tailwind CSS
+- Database management with PostgreSQL
+
+## 🎯 TO-DO
+
+### Core Features
+
+- [x] User authentication with AWS Cognito
+- [x] Basic project structure with Next.js and Spring Boot
+- [x] Database setup with PostgreSQL
+- [x] Docker containerization
+- [ ] Mood entry tracking with timestamps
+- [ ] Activity tag system for categorizing moods
+- [ ] RESTful API endpoints for mood entries
+- [ ] User dashboard for viewing mood history
+
+### Frontend Features
+
+- [x] Responsive UI with Tailwind CSS
+- [ ] Mood entry form component
+- [ ] Mood history display
+- [ ] Activity tag selection interface
+- [ ] Data visualization (charts/graphs)
+- [ ] User profile management
+
+### DevOps & Deployment
+
+- [x] Docker Compose for local development
+- [x] AWS SAM Lambda Setup
+- [x] Environment-specific configurations
+- [ ] Production Docker configuration
+
+### Authentication & Security
+
+- [x] AWS Cognito Front-end integration
+- [x] User session management
+- [x] Protected routes in frontend
+- [x] JWT token validation in backend
+- [x] Secure API endpoints
