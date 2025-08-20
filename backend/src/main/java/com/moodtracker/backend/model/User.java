@@ -8,8 +8,8 @@ import java.util.List;
 public class User {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    @GeneratedValue(strategy = GenerationType.UUID)
+    private String id;
 
     private String username;
     private String email;
@@ -26,7 +26,7 @@ public class User {
     }
 
     // Getters and Setters
-    public Long getId() { return id; }
+    public String getId() { return id; }
 
     public String getUsername() { return username; }
     public void setUsername(String username) { this.username = username; }
