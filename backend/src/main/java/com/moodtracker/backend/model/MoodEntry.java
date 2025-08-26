@@ -5,27 +5,41 @@ import java.time.LocalDateTime;        // For LocalDateTime
 import java.util.List;                 // For List
 
 @Entity
+@Table(name = "mood_entries") // Or whatever is the table name for the mood entries
 public class MoodEntry {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    private LocalDateTime timestamp;
+    private String mood; // e.g., "happy", "sad", "neutral"
+	private String color; // mood color equivalent
 
-    private String mood; // Consider converting this to an enum later
-
+	// Link to User
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id")
+    @JoinColumn(name = "user_id", nullable = false)
     private User user;
-
+	
+	// Emoji representing mood
+	@Column(nullable = false)
+	private String emoji;
+	
+	// Journal entry text
+	@Column(length = 2000)
+	private String journalEntry;
+	
+	// List of activities for the mood entry
     @ManyToMany(fetch = FetchType.LAZY)
     @JoinTable(
-        name = "mood_entry_activity_tag",
+        name = "mood_entry_activities", // Changed from mood_entry_activity_tag to mood_entry_activities
         joinColumns = @JoinColumn(name = "mood_entry_id"),
         inverseJoinColumns = @JoinColumn(name = "activity_tag_id")
     )
     private List<ActivityTag> activityTags;
+	
+	// Timestamp when mood entry was created (if we plan on using this)
+	@Column(nullable = false)
+	private LocalDateTime timestamp;
 
     // --- Constructors ---
 
@@ -33,11 +47,13 @@ public class MoodEntry {
         // JPA requires a default constructor
     }
 
-    public MoodEntry(LocalDateTime timestamp, String mood, User user, List<ActivityTag> activityTags) {
+    public MoodEntry(LocalDateTime timestamp, String mood, String color, User user, List<ActivityTag> activityTags, String journalEntry) {
         this.timestamp = timestamp;
         this.mood = mood;
+		this.color = color;
         this.user = user;
         this.activityTags = activityTags;
+		this.journalEntry = journalEntry;
     }
 
     // --- Getters and Setters ---
@@ -73,6 +89,30 @@ public class MoodEntry {
     public void setUser(User user) {
         this.user = user;
     }
+	
+	public String getEmoji() {
+		return emoji;
+	}
+	
+	public void setEmoji(String emoji) {
+		this.emoji = emoji;
+	}
+	
+	public String getColor() {
+		return color;
+	}
+	
+	public void setColor(String color) {
+		this.color = color;
+	}
+	
+	public String getJournalEntry() {
+		return journalEntry;
+	}
+	
+	public void setJournalEntry(String journalEntry) {
+		this.journalEntry = journalEntry;
+	}
 
     public List<ActivityTag> getActivityTags() {
         return activityTags;
