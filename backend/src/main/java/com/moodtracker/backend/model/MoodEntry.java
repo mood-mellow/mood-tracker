@@ -9,8 +9,8 @@ import java.util.List;                 // For List
 public class MoodEntry {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    @GeneratedValue(strategy = GenerationType.UUID)
+    private String id;
 
     private String mood; // e.g., "happy", "sad", "neutral"
 	private String color; // mood color equivalent
@@ -58,11 +58,11 @@ public class MoodEntry {
 
     // --- Getters and Setters ---
 
-    public Long getId() {
+    public String getId() {
         return id;
     }
 
-    public void setId(Long id) {
+    public void setId(String id) {
         this.id = id;
     }
 

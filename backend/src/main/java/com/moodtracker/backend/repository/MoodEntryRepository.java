@@ -16,3 +16,4 @@ public interface MoodEntryRepository extends JpaRepository<MoodEntry, Long> {
         LocalDateTime end
     );
 }
+

@@ -27,7 +27,7 @@ import java.time.format.DateTimeParseException;
 import java.util.Optional;
 
 @RestController
-@RequestMapping("/mood-entries")
+@RequestMapping("/api/mood-entries")
 public class MoodEntryController {
 
     private final MoodEntryRepository moodEntryRepository;

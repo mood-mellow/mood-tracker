@@ -7,8 +7,8 @@ import java.util.List;
 public class ActivityTag {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    @GeneratedValue(strategy = GenerationType.UUID)
+    private String id;
 
     private String label;
 
@@ -23,7 +23,7 @@ public class ActivityTag {
     }
 
     // Getters and Setters
-    public Long getId() { return id; }
+    public String getId() { return id; }
 
     public String getLabel() { return label; }
     public void setLabel(String label) { this.label = label; }

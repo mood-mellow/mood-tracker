@@ -29,7 +29,10 @@ public class SecurityConfig {
             .authorizeHttpRequests(auth -> auth
                 .anyRequest().authenticated()
             )
-            .formLogin(Customizer.withDefaults()); // enables login form
+            .formLogin(form -> form.disable())
+
+            // JWT Authentication
+            .oauth2ResourceServer(oauth2 -> oauth2.jwt(Customizer.withDefaults()));
         return http.build();
     }
 }
