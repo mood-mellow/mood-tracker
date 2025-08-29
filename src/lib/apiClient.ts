@@ -42,7 +42,7 @@ export async function apiFetch<T = unknown>(
 
   const headers = {
     ...(options.headers ?? {}),
-    // "Content-Type": "application/json",
+    "Content-Type": "application/json",
     ...(token ? { Authorization: `Bearer ${token}` } : {}),
   };
 

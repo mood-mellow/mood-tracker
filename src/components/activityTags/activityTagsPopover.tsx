@@ -11,6 +11,7 @@ import { Button } from "~/components/ui/button";
 import { Plus, Edit2, Trash2, ArrowLeft, Save } from "lucide-react";
 import { useState } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { apiFetch } from "~/lib/apiClient";
 
 // Dummy activities data
 const dummyActivities = [
@@ -36,22 +37,15 @@ interface CreateActivityTagRequest {
 }
 
 // API function to create activity tag
-const createActivityTag = async (
-  data: CreateActivityTagRequest,
-): Promise<ActivityTag> => {
-  const response = await fetch("/activity-tags", {
+const createActivityTag = async (data: CreateActivityTagRequest) => {
+  const result = await apiFetch<string>("http://localhost:8080/activity-tags", {
     method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify(data),
+    body: JSON.stringify({
+      label: data.name,
+    }),
   });
-
-  if (!response.ok) {
-    throw new Error("Failed to create activity tag");
-  }
-
-  return response.json();
+  console.log(result);
+  return result;
 };
 
 export function ActivityTagsPopover() {
@@ -70,10 +64,10 @@ export function ActivityTagsPopover() {
   // TanStack Query mutation for creating activity tags
   const createActivityMutation = useMutation({
     mutationFn: createActivityTag,
-    onSuccess: (data) => {
+    onSuccess: async (data) => {
       console.log("Created activity tag:", data);
       // Invalidate and refetch activity tags query
-      queryClient.invalidateQueries({ queryKey: ["activityTags"] });
+      await queryClient.invalidateQueries({ queryKey: ["activityTags"] });
       // Reset form and go back to main screen
       handleBack();
     },
@@ -110,7 +104,7 @@ export function ActivityTagsPopover() {
   };
 
   const handleCreateSave = () => {
-    if (newActivityName && newActivityName.trim()) {
+    if (newActivityName?.trim()) {
       createActivityMutation.mutate({
         name: newActivityName.trim(),
         color: newActivityColor,
@@ -222,12 +216,13 @@ export function ActivityTagsPopover() {
                   <Button
                     className="flex-1"
                     onClick={handleCreateSave}
+                    loading={createActivityMutation.isPending}
                     disabled={
                       !newActivityName?.trim() ||
                       createActivityMutation.isPending
                     }
                   >
-                    <Save className="mr-2 h-4 w-4" />
+                    <Save />
                     {createActivityMutation.isPending
                       ? "Creating..."
                       : "Create"}
