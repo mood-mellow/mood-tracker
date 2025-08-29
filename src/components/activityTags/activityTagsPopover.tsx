@@ -10,29 +10,81 @@ import { Input } from "~/components/ui/input";
 import { Button } from "~/components/ui/button";
 import { Plus, Edit2, Trash2, ArrowLeft, Save } from "lucide-react";
 import { useState } from "react";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 // Dummy activities data
 const dummyActivities = [
-  { id: 1, name: "Exercise", color: "bg-blue-500" },
-  { id: 2, name: "Reading", color: "bg-green-500" },
-  { id: 3, name: "Meditation", color: "bg-purple-500" },
-  { id: 4, name: "Work", color: "bg-orange-500" },
-  { id: 5, name: "Cooking", color: "bg-red-500" },
-  { id: 6, name: "Social", color: "bg-pink-500" },
-  { id: 7, name: "Music", color: "bg-indigo-500" },
-  { id: 8, name: "Gaming", color: "bg-yellow-500" },
+  { id: "1", name: "Exercise", color: "bg-blue-500" },
+  { id: "2", name: "Reading", color: "bg-green-500" },
+  { id: "3", name: "Meditation", color: "bg-purple-500" },
+  { id: "4", name: "Work", color: "bg-orange-500" },
+  { id: "5", name: "Cooking", color: "bg-red-500" },
+  { id: "6", name: "Social", color: "bg-pink-500" },
+  { id: "7", name: "Music", color: "bg-indigo-500" },
+  { id: "8", name: "Gaming", color: "bg-yellow-500" },
 ];
 
+interface ActivityTag {
+  id: string;
+  name: string;
+  color: string;
+}
+
+interface CreateActivityTagRequest {
+  name: string;
+  color: string;
+}
+
+// API function to create activity tag
+const createActivityTag = async (
+  data: CreateActivityTagRequest,
+): Promise<ActivityTag> => {
+  const response = await fetch("/activity-tags", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(data),
+  });
+
+  if (!response.ok) {
+    throw new Error("Failed to create activity tag");
+  }
+
+  return response.json();
+};
+
 export function ActivityTagsPopover() {
+  const queryClient = useQueryClient();
+
   const [editingActivity, setEditingActivity] = useState<{
-    id: number;
+    id: string;
     name: string;
     color: string;
   } | null>(null);
+
+  const [newActivityName, setNewActivityName] = useState<string | null>(null);
+  const [newActivityColor, setNewActivityColor] = useState("bg-blue-500");
   const [editName, setEditName] = useState("");
 
+  // TanStack Query mutation for creating activity tags
+  const createActivityMutation = useMutation({
+    mutationFn: createActivityTag,
+    onSuccess: (data) => {
+      console.log("Created activity tag:", data);
+      // Invalidate and refetch activity tags query
+      queryClient.invalidateQueries({ queryKey: ["activityTags"] });
+      // Reset form and go back to main screen
+      handleBack();
+    },
+    onError: (error) => {
+      console.error("Error creating activity tag:", error);
+      // You can add toast notification here
+    },
+  });
+
   const handleEdit = (activity: {
-    id: number;
+    id: string;
     name: string;
     color: string;
   }) => {
@@ -43,12 +95,27 @@ export function ActivityTagsPopover() {
   const handleBack = () => {
     setEditingActivity(null);
     setEditName("");
+    setNewActivityName(null);
+    setNewActivityColor("bg-blue-500");
+  };
+
+  const handleCreating = () => {
+    setNewActivityName("");
   };
 
   const handleSave = () => {
     // Handle save logic here
     console.log("Saving activity:", { ...editingActivity, name: editName });
     handleBack();
+  };
+
+  const handleCreateSave = () => {
+    if (newActivityName && newActivityName.trim()) {
+      createActivityMutation.mutate({
+        name: newActivityName.trim(),
+        color: newActivityColor,
+      });
+    }
   };
 
   return (
@@ -110,6 +177,64 @@ export function ActivityTagsPopover() {
                 </div>
               </div>
             </>
+          ) : newActivityName !== null ? (
+            // New Activity Screen
+            <>
+              <div className="flex items-center gap-2">
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-8 w-8"
+                  onClick={handleBack}
+                  disabled={createActivityMutation.isPending}
+                >
+                  <ArrowLeft className="h-4 w-4" />
+                </Button>
+                <h4 className="leading-none font-medium">New Activity</h4>
+              </div>
+
+              <div className="space-y-4">
+                <div className="flex items-center gap-3">
+                  <div className={`h-4 w-4 rounded-full ${newActivityColor}`} />
+                  <span className="text-muted-foreground text-sm">Color</span>
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="newActivityName">Activity Name</Label>
+                  <Input
+                    id="newActivityName"
+                    value={newActivityName}
+                    onChange={(e) => setNewActivityName(e.target.value)}
+                    placeholder="Enter activity name"
+                    disabled={createActivityMutation.isPending}
+                  />
+                </div>
+
+                <div className="flex gap-2">
+                  <Button
+                    variant="outline"
+                    className="flex-1"
+                    onClick={handleBack}
+                    disabled={createActivityMutation.isPending}
+                  >
+                    Cancel
+                  </Button>
+                  <Button
+                    className="flex-1"
+                    onClick={handleCreateSave}
+                    disabled={
+                      !newActivityName?.trim() ||
+                      createActivityMutation.isPending
+                    }
+                  >
+                    <Save className="mr-2 h-4 w-4" />
+                    {createActivityMutation.isPending
+                      ? "Creating..."
+                      : "Create"}
+                  </Button>
+                </div>
+              </div>
+            </>
           ) : (
             // Main Screen
             <>
@@ -161,15 +286,11 @@ export function ActivityTagsPopover() {
                 </div>
               </div>
               <div className="grid gap-2">
-                <div className="grid grid-cols-3 items-center gap-4">
-                  <Label htmlFor="maxHeight">Max. height</Label>
-                  <Input
-                    id="maxHeight"
-                    defaultValue="none"
-                    className="col-span-2 h-8"
-                  />
-                </div>
-                <Button size={"sm"} variant={"secondary"}>
+                <Button
+                  size={"sm"}
+                  variant={"secondary"}
+                  onClick={() => handleCreating()}
+                >
                   <Plus /> New Activity
                 </Button>
               </div>
