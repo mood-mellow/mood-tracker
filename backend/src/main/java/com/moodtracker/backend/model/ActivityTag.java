@@ -3,6 +3,8 @@ package com.moodtracker.backend.model;
 import jakarta.persistence.*;
 import java.util.List;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 @Entity
 public class ActivityTag {
 
@@ -12,8 +14,14 @@ public class ActivityTag {
 
     private String label;
 
+    @JsonIgnore // prevent circular reference in JSON serialization
     @ManyToMany(mappedBy = "activityTags")
     private List<MoodEntry> moodEntries;
+
+    @JsonIgnore // prevent user detail exposure
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id", nullable = false)
+    private User user;
 
     // Constructors
     public ActivityTag() {}
@@ -30,4 +38,7 @@ public class ActivityTag {
 
     public List<MoodEntry> getMoodEntries() { return moodEntries; }
     public void setMoodEntries(List<MoodEntry> moodEntries) { this.moodEntries = moodEntries; }
+
+    public User getUser() { return user; }
+    public void setUser(User user) { this.user = user; }
 }

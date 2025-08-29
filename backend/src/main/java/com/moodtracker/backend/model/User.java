@@ -14,6 +14,10 @@ public class User {
     private String username;
     private String email;
 
+    // One user can have many activity tags
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<ActivityTag> activityTags;
+
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<MoodEntry> moodEntries;
 
@@ -36,4 +40,7 @@ public class User {
 
     public List<MoodEntry> getMoodEntries() { return moodEntries; }
     public void setMoodEntries(List<MoodEntry> moodEntries) { this.moodEntries = moodEntries; }
+
+    public List<ActivityTag> getActivityTags() { return activityTags; }
+    public void setActivityTags(List<ActivityTag> activityTags) { this.activityTags = activityTags; }
 }
