@@ -7,6 +7,6 @@ import org.springframework.stereotype.Repository;
 import java.util.Optional;
 
 @Repository
-public interface ActivityTagRepository extends JpaRepository<ActivityTag, Long> {
+public interface ActivityTagRepository extends JpaRepository<ActivityTag, String> {
     Optional<ActivityTag> findByLabel(String label);
 }

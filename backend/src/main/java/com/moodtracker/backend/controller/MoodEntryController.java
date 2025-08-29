@@ -27,7 +27,7 @@ public class MoodEntryController {
 
 	// Getting mood entries by user
 	@GetMapping("/user/{userId}")
-	public List<MoodEntry> getMoodEntriesByUser(@PathVariable Long userId) {
+	public List<MoodEntry> getMoodEntriesByUser(@PathVariable String userId) {
 		return userRepository.findById(userId)
 			.map(moodEntryRepository::findByUserId)
 			.orElseThrow(() -> new RuntimeException("User not found."));
@@ -36,7 +36,7 @@ public class MoodEntryController {
 	// Getting mood entries in a date range
 	@GetMapping("/user/{userId}/range")
 	public List<MoodEntry> getMoodEntriesInRange(
-		@PathVariable Long userId,
+		@PathVariable String userId,
 		@RequestParam String start,
 		@RequestParam String end
 	) {
