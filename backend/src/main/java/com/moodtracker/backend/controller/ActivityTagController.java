@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -40,6 +41,41 @@ public class ActivityTagController {
     public List<ActivityTag> getAllTags() {
         return activityTagRepository.findAll();
     }
+
+@PutMapping("/{id}")
+public ResponseEntity<ActivityTag> updateTag(@PathVariable String id, @RequestBody ActivityTag tag, Authentication auth) {
+    try {
+        logger.info("Received request to update activity tag with ID: {}", id);
+        
+        String userId = getCurrentUserId(auth);
+        logger.info("User ID from auth: {}", userId);
+        
+        // Find the existing activity tag
+        ActivityTag existingTag = activityTagRepository.findById(id)
+            .orElseThrow(() -> new RuntimeException("Activity tag not found with ID: " + id));
+        
+        // Verify that the tag belongs to the current user
+        if (!existingTag.getUser().getId().equals(userId)) {
+            logger.warn("User {} attempted to update activity tag {} owned by user {}", 
+                       userId, id, existingTag.getUser().getId());
+            return ResponseEntity.status(403).build(); // Forbidden
+        }
+        
+        // Update the label
+        existingTag.setLabel(tag.getLabel());
+        
+        // Save the updated tag
+        ActivityTag updatedTag = activityTagRepository.save(existingTag);
+        
+        logger.info("Successfully updated activity tag with ID: {}", updatedTag.getId());
+        
+        return ResponseEntity.ok(updatedTag);
+        
+    } catch (Exception e) {
+        logger.error("Error updating activity tag: ", e);
+        return ResponseEntity.badRequest().build();
+    }
+}
 
 @PostMapping
 public ResponseEntity<ActivityTag> createTag(@RequestBody ActivityTag tag, Authentication auth) {
