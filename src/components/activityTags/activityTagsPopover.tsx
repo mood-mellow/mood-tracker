@@ -10,80 +10,31 @@ import { Input } from "~/components/ui/input";
 import { Button } from "~/components/ui/button";
 import { Plus, Edit2, Trash2, ArrowLeft, Save } from "lucide-react";
 import { useState } from "react";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { apiFetch } from "~/lib/apiClient";
-
-// Dummy activities data
-const dummyActivities = [
-  { id: "1", name: "Exercise", color: "bg-blue-500" },
-  { id: "2", name: "Reading", color: "bg-green-500" },
-  { id: "3", name: "Meditation", color: "bg-purple-500" },
-  { id: "4", name: "Work", color: "bg-orange-500" },
-  { id: "5", name: "Cooking", color: "bg-red-500" },
-  { id: "6", name: "Social", color: "bg-pink-500" },
-  { id: "7", name: "Music", color: "bg-indigo-500" },
-  { id: "8", name: "Gaming", color: "bg-yellow-500" },
-];
-
-interface ActivityTag {
-  id: string;
-  name: string;
-  color: string;
-}
-
-interface CreateActivityTagRequest {
-  name: string;
-  color: string;
-}
-
-// API function to create activity tag
-const createActivityTag = async (data: CreateActivityTagRequest) => {
-  const result = await apiFetch<string>("http://localhost:8080/activity-tags", {
-    method: "POST",
-    body: JSON.stringify({
-      label: data.name,
-    }),
-  });
-  console.log(result);
-  return result;
-};
+import {
+  useActivityTags,
+  useCreateActivityTag,
+  useUpdateActivityTag,
+  getActivityColor,
+  type ActivityTag,
+  useDeleteActivityTag,
+} from "~/hooks/activityTagHooks";
 
 export function ActivityTagsPopover() {
-  const queryClient = useQueryClient();
+  const { data: activityTags = [], isLoading, error } = useActivityTags();
+  const createActivityMutation = useCreateActivityTag();
+  const updateActivityMutation = useUpdateActivityTag();
+  const deleteActivityMutation = useDeleteActivityTag();
 
-  const [editingActivity, setEditingActivity] = useState<{
-    id: string;
-    name: string;
-    color: string;
-  } | null>(null);
-
+  const [editingActivity, setEditingActivity] = useState<ActivityTag | null>(
+    null,
+  );
   const [newActivityName, setNewActivityName] = useState<string | null>(null);
   const [newActivityColor, setNewActivityColor] = useState("bg-blue-500");
   const [editName, setEditName] = useState("");
 
-  // TanStack Query mutation for creating activity tags
-  const createActivityMutation = useMutation({
-    mutationFn: createActivityTag,
-    onSuccess: async (data) => {
-      console.log("Created activity tag:", data);
-      // Invalidate and refetch activity tags query
-      await queryClient.invalidateQueries({ queryKey: ["activityTags"] });
-      // Reset form and go back to main screen
-      handleBack();
-    },
-    onError: (error) => {
-      console.error("Error creating activity tag:", error);
-      // You can add toast notification here
-    },
-  });
-
-  const handleEdit = (activity: {
-    id: string;
-    name: string;
-    color: string;
-  }) => {
+  const handleEdit = (activity: ActivityTag) => {
     setEditingActivity(activity);
-    setEditName(activity.name);
+    setEditName(activity.label);
   };
 
   const handleBack = () => {
@@ -98,16 +49,55 @@ export function ActivityTagsPopover() {
   };
 
   const handleSave = () => {
-    // Handle save logic here
-    console.log("Saving activity:", { ...editingActivity, name: editName });
-    handleBack();
+    if (editingActivity && editName.trim()) {
+      updateActivityMutation.mutate(
+        {
+          id: editingActivity.id,
+          data: { label: editName.trim() },
+        },
+        {
+          onSuccess: () => {
+            console.log("Updated activity tag");
+            handleBack();
+          },
+          onError: (error) => {
+            console.error("Error updating activity tag:", error);
+          },
+        },
+      );
+    }
   };
 
   const handleCreateSave = () => {
     if (newActivityName?.trim()) {
-      createActivityMutation.mutate({
-        name: newActivityName.trim(),
-        color: newActivityColor,
+      createActivityMutation.mutate(
+        {
+          name: newActivityName.trim(),
+          color: newActivityColor,
+        },
+        {
+          onSuccess: (data) => {
+            console.log("Created activity tag:", data);
+            handleBack();
+          },
+          onError: (error) => {
+            console.error("Error creating activity tag:", error);
+          },
+        },
+      );
+    }
+  };
+  const handleDelete = (activity: ActivityTag) => {
+    if (
+      window.confirm(`Are you sure you want to delete "${activity.label}"?`)
+    ) {
+      deleteActivityMutation.mutate(activity.id, {
+        onSuccess: () => {
+          console.log("Deleted activity tag:", activity.label);
+        },
+        onError: (error) => {
+          console.error("Error deleting activity tag:", error);
+        },
       });
     }
   };
@@ -136,9 +126,7 @@ export function ActivityTagsPopover() {
 
               <div className="space-y-4">
                 <div className="flex items-center gap-3">
-                  <div
-                    className={`h-4 w-4 rounded-full ${editingActivity.color}`}
-                  />
+                  <div className={`h-4 w-4 rounded-full bg-blue-500`} />
                   <span className="text-muted-foreground text-sm">Color</span>
                 </div>
 
@@ -149,6 +137,7 @@ export function ActivityTagsPopover() {
                     value={editName}
                     onChange={(e) => setEditName(e.target.value)}
                     placeholder="Enter activity name"
+                    disabled={updateActivityMutation.isPending}
                   />
                 </div>
 
@@ -157,16 +146,19 @@ export function ActivityTagsPopover() {
                     variant="outline"
                     className="flex-1"
                     onClick={handleBack}
+                    disabled={updateActivityMutation.isPending}
                   >
                     Cancel
                   </Button>
                   <Button
                     className="flex-1"
                     onClick={handleSave}
-                    disabled={!editName.trim()}
+                    disabled={
+                      !editName.trim() || updateActivityMutation.isPending
+                    }
                   >
                     <Save className="mr-2 h-4 w-4" />
-                    Save
+                    {updateActivityMutation.isPending ? "Saving..." : "Save"}
                   </Button>
                 </div>
               </div>
@@ -216,13 +208,12 @@ export function ActivityTagsPopover() {
                   <Button
                     className="flex-1"
                     onClick={handleCreateSave}
-                    loading={createActivityMutation.isPending}
                     disabled={
                       !newActivityName?.trim() ||
                       createActivityMutation.isPending
                     }
                   >
-                    <Save />
+                    <Save className="mr-2 h-4 w-4" />
                     {createActivityMutation.isPending
                       ? "Creating..."
                       : "Create"}
@@ -238,46 +229,63 @@ export function ActivityTagsPopover() {
                 <p className="text-muted-foreground text-sm">
                   Apply or create activities for this mood entry.
                 </p>
-                {/* Activities List */}
                 <div className="max-h-60 overflow-y-auto pr-2">
-                  <div className="grid gap-1">
-                    {dummyActivities.map((activity) => (
-                      <div
-                        key={activity.id}
-                        className="flex items-center gap-2"
-                      >
-                        <Button
-                          variant="ghost"
-                          className="flex flex-1 items-center justify-start gap-3 px-3 py-2 text-sm"
+                  {isLoading ? (
+                    <div className="text-muted-foreground py-4 text-center">
+                      Loading activities...
+                    </div>
+                  ) : error ? (
+                    <div className="py-4 text-center text-red-500">
+                      Error loading activities
+                    </div>
+                  ) : (
+                    <div className="grid gap-1">
+                      {activityTags.map((activity, index) => (
+                        <div
+                          key={activity.id}
+                          className="flex items-center gap-2"
                         >
-                          <div
-                            className={`h-3 w-3 rounded-full ${activity.color}`}
-                          />
-                          <span className="font-medium">{activity.name}</span>
-                        </Button>
-                        <div className="flex items-center gap-1">
                           <Button
                             variant="ghost"
-                            size="icon"
-                            className="h-6 w-6 p-0 hover:bg-green-100 hover:text-green-700 dark:hover:bg-green-900/20 dark:hover:text-green-400"
-                            onClick={() => handleEdit(activity)}
+                            className="flex flex-1 items-center justify-start gap-3 px-3 py-2 text-sm"
                           >
-                            <Edit2 className="h-3 w-3" />
+                            <div
+                              className={`h-3 w-3 rounded-full ${getActivityColor(index)}`}
+                            />
+                            <span className="font-medium">
+                              {activity.label}
+                            </span>
                           </Button>
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            className="h-6 w-6 p-0 hover:bg-red-100 hover:text-red-700 dark:hover:bg-red-900/20 dark:hover:text-red-400"
-                            onClick={() => {
-                              // Handle delete
-                            }}
-                          >
-                            <Trash2 className="h-3 w-3" />
-                          </Button>
+                          <div className="flex items-center gap-1">
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="h-6 w-6 p-0 hover:bg-green-100 hover:text-green-700 dark:hover:bg-green-900/20 dark:hover:text-green-400"
+                              onClick={() => handleEdit(activity)}
+                            >
+                              <Edit2 className="h-3 w-3" />
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="h-6 w-6 p-0 hover:bg-red-100 hover:text-red-700 dark:hover:bg-red-900/20 dark:hover:text-red-400"
+                              onClick={() => {
+                                handleDelete(activity);
+                              }}
+                              disabled={deleteActivityMutation.isPending}
+                            >
+                              <Trash2 className="h-3 w-3" />
+                            </Button>
+                          </div>
                         </div>
-                      </div>
-                    ))}
-                  </div>
+                      ))}
+                      {activityTags.length === 0 && (
+                        <div className="text-muted-foreground py-4 text-center">
+                          No activities yet. Create your first one!
+                        </div>
+                      )}
+                    </div>
+                  )}
                 </div>
               </div>
               <div className="grid gap-2">
