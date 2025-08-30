@@ -22,7 +22,8 @@ public class User {
     private List<MoodEntry> moodEntries;
 
     // Constructors
-    public User() {}
+    public User() {
+    }
 
     public User(String username, String email) {
         this.username = username;
@@ -30,17 +31,39 @@ public class User {
     }
 
     // Getters and Setters
-    public String getId() { return id; }
+    public String getId() {
+        return id;
+    }
 
-    public String getUsername() { return username; }
-    public void setUsername(String username) { this.username = username; }
+    public String getUsername() {
+        return username;
+    }
 
-    public String getEmail() { return email; }
-    public void setEmail(String email) { this.email = email; }
+    public void setUsername(String username) {
+        this.username = username;
+    }
 
-    public List<MoodEntry> getMoodEntries() { return moodEntries; }
-    public void setMoodEntries(List<MoodEntry> moodEntries) { this.moodEntries = moodEntries; }
+    public String getEmail() {
+        return email;
+    }
 
-    public List<ActivityTag> getActivityTags() { return activityTags; }
-    public void setActivityTags(List<ActivityTag> activityTags) { this.activityTags = activityTags; }
+    public void setEmail(String email) {
+        this.email = email;
+    }
+
+    public List<MoodEntry> getMoodEntries() {
+        return moodEntries;
+    }
+
+    public void setMoodEntries(List<MoodEntry> moodEntries) {
+        this.moodEntries = moodEntries;
+    }
+
+    public List<ActivityTag> getActivityTags() {
+        return activityTags;
+    }
+
+    public void setActivityTags(List<ActivityTag> activityTags) {
+        this.activityTags = activityTags;
+    }
 }

@@ -24,21 +24,39 @@ public class ActivityTag {
     private User user;
 
     // Constructors
-    public ActivityTag() {}
+    public ActivityTag() {
+    }
 
     public ActivityTag(String label) {
         this.label = label;
     }
 
     // Getters and Setters
-    public String getId() { return id; }
+    public String getId() {
+        return id;
+    }
 
-    public String getLabel() { return label; }
-    public void setLabel(String label) { this.label = label; }
+    public String getLabel() {
+        return label;
+    }
 
-    public List<MoodEntry> getMoodEntries() { return moodEntries; }
-    public void setMoodEntries(List<MoodEntry> moodEntries) { this.moodEntries = moodEntries; }
+    public void setLabel(String label) {
+        this.label = label;
+    }
 
-    public User getUser() { return user; }
-    public void setUser(User user) { this.user = user; }
+    public List<MoodEntry> getMoodEntries() {
+        return moodEntries;
+    }
+
+    public void setMoodEntries(List<MoodEntry> moodEntries) {
+        this.moodEntries = moodEntries;
+    }
+
+    public User getUser() {
+        return user;
+    }
+
+    public void setUser(User user) {
+        this.user = user;
+    }
 }

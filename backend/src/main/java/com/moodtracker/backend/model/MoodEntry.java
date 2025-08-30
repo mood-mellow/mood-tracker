@@ -1,8 +1,8 @@
 package com.moodtracker.backend.model;
 
-import jakarta.persistence.*;          // For @Entity, @Id, etc.
-import java.time.LocalDateTime;        // For LocalDateTime
-import java.util.List;                 // For List
+import jakarta.persistence.*; // For @Entity, @Id, etc.
+import java.time.LocalDateTime; // For LocalDateTime
+import java.util.List; // For List
 
 @Entity
 public class MoodEntry {
@@ -20,11 +20,7 @@ public class MoodEntry {
     private User user;
 
     @ManyToMany(fetch = FetchType.LAZY)
-    @JoinTable(
-        name = "mood_entry_activity_tag",
-        joinColumns = @JoinColumn(name = "mood_entry_id"),
-        inverseJoinColumns = @JoinColumn(name = "activity_tag_id")
-    )
+    @JoinTable(name = "mood_entry_activity_tag", joinColumns = @JoinColumn(name = "mood_entry_id"), inverseJoinColumns = @JoinColumn(name = "activity_tag_id"))
     private List<ActivityTag> activityTags;
 
     // --- Constructors ---

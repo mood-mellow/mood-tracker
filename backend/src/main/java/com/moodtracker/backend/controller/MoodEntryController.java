@@ -29,23 +29,22 @@ public class MoodEntryController {
 	@GetMapping("/user/{userId}")
 	public List<MoodEntry> getMoodEntriesByUser(@PathVariable String userId) {
 		return userRepository.findById(userId)
-			.map(moodEntryRepository::findByUserId)
-			.orElseThrow(() -> new RuntimeException("User not found."));
+				.map(moodEntryRepository::findByUserId)
+				.orElseThrow(() -> new RuntimeException("User not found."));
 	}
 
 	// Getting mood entries in a date range
 	@GetMapping("/user/{userId}/range")
 	public List<MoodEntry> getMoodEntriesInRange(
-		@PathVariable String userId,
-		@RequestParam String start,
-		@RequestParam String end
-	) {
+			@PathVariable String userId,
+			@RequestParam String start,
+			@RequestParam String end) {
 		LocalDateTime startTime = LocalDateTime.parse(start);
 		LocalDateTime endTime = LocalDateTime.parse(end);
 
 		return userRepository.findById(userId)
-			.map(user -> moodEntryRepository.findByUserAndTimestampBetween(user, startTime, endTime))
-			.orElseThrow(() -> new RuntimeException("User not found."));
+				.map(user -> moodEntryRepository.findByUserAndTimestampBetween(user, startTime, endTime))
+				.orElseThrow(() -> new RuntimeException("User not found."));
 	}
 
 	// Delete a mood entry
