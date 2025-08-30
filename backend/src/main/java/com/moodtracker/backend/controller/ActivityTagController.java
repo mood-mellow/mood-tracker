@@ -8,6 +8,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -45,7 +46,7 @@ public ResponseEntity<ActivityTag> createTag(@RequestBody ActivityTag tag, Authe
     try {
         logger.info("Received request to create activity tag: {}", tag.getLabel());
         
-        String userId = "f1db9580-10c1-70aa-ceb6-5563884f4a66";
+        String userId = getCurrentUserId(auth);
         logger.info("Looking for user with ID: {}", userId);
         
         User currentUser = userRepository.findById(userId)
@@ -68,5 +69,37 @@ public ResponseEntity<ActivityTag> createTag(@RequestBody ActivityTag tag, Authe
     @DeleteMapping("/{id}")
     public void deleteTag(@PathVariable String id) {
         activityTagRepository.deleteById(id);
+    }
+
+    /**
+     * Extract user ID from JWT token or authentication context
+     */
+    private String getCurrentUserId(Authentication auth) {
+        if (auth == null) {
+            throw new RuntimeException("No authentication found");
+        }
+
+        // For JWT tokens (AWS Cognito)
+        if (auth.getPrincipal() instanceof Jwt) {
+            Jwt jwt = (Jwt) auth.getPrincipal();
+            
+            // AWS Cognito typically uses 'sub' claim for user ID
+            String userId = jwt.getClaimAsString("sub");
+            if (userId != null) {
+                return userId;
+            }
+            
+            // Fallback to username claim
+            String username = jwt.getClaimAsString("username");
+            if (username != null) {
+                return username;
+            }
+            
+            // Last fallback to subject
+            return jwt.getSubject();
+        }
+        
+        // For other authentication types, use the name
+        return auth.getName();
     }
 }
