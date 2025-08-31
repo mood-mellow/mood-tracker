@@ -1,55 +1,104 @@
 package com.moodtracker.backend.controller;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeParseException;
+import java.util.List;
+
+import org.springframework.format.annotation.DateTimeFormat;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.oauth2.jwt.Jwt;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
+
 import com.moodtracker.backend.model.MoodEntry;
+import com.moodtracker.backend.model.User;
 import com.moodtracker.backend.repository.MoodEntryRepository;
 import com.moodtracker.backend.repository.UserRepository;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.*;
-
-import java.time.LocalDateTime;
-import java.util.List;
 
 @RestController
 @RequestMapping("/api/mood-entries")
 public class MoodEntryController {
 
-	@Autowired
-	private MoodEntryRepository moodEntryRepository;
+	private final MoodEntryRepository moodEntryRepository;
+	private final UserRepository userRepository;
 
-	@Autowired
-	private UserRepository userRepository;
+	public MoodEntryController(MoodEntryRepository moodEntryRepository, UserRepository userRepository) {
+		this.moodEntryRepository = moodEntryRepository;
+		this.userRepository = userRepository;
+	}
 
-	// Getting all mood entries
+	@PostMapping
+	public ResponseEntity<MoodEntry> createMoodEntry(@RequestBody MoodEntry moodEntry,
+			Authentication authentication) {
+		// Extract userId from JWT Authentication and Cognito claim
+		Jwt jwt = (Jwt) authentication.getPrincipal();
+		String userId = jwt.getClaimAsString("sub");
+
+		// Find the User entity
+		User user = userRepository.findById(userId)
+				.orElseThrow(() -> new RuntimeException("User not found"));
+
+		// Attach user + timestamp
+		moodEntry.setUser(user);
+		moodEntry.setTimestamp(LocalDateTime.now());
+
+		MoodEntry saved = moodEntryRepository.save(moodEntry);
+		return ResponseEntity.ok(saved);
+	}
+
 	@GetMapping
-	public List<MoodEntry> getAllMoodEntries() {
-		return moodEntryRepository.findAll();
+	public List<MoodEntry> getMoodEntries(
+			Authentication authentication,
+			@RequestParam(required = false) String start,
+			@RequestParam(required = false) String end) {
+		// Extract userId from JWT Authentication and Cognito claim (consistent with
+		// other methods)
+		Jwt jwt = (Jwt) authentication.getPrincipal();
+		String userId = jwt.getClaimAsString("sub");
+
+		if (start == null || end == null) {
+			return moodEntryRepository.findByUserId(userId);
+		}
+		try {
+			LocalDateTime startDate = LocalDateTime.parse(start);
+			LocalDateTime endDate = LocalDateTime.parse(end);
+			return moodEntryRepository.findByUserIdAndTimestampBetween(
+					userId, startDate, endDate);
+		} catch (DateTimeParseException e) {
+			throw new IllegalArgumentException("Invalid date format. Use ISO-8601 (e.g. 2025-08-01)");
+		}
 	}
 
-	// Getting mood entries by user
-	@GetMapping("/user/{userId}")
-	public List<MoodEntry> getMoodEntriesByUser(@PathVariable String userId) {
-		return userRepository.findById(userId)
-				.map(moodEntryRepository::findByUserId)
-				.orElseThrow(() -> new RuntimeException("User not found."));
-	}
+	@DeleteMapping
+	public ResponseEntity<?> deleteMoodEntriesInRange(
+			@RequestParam("start") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate start,
+			@RequestParam("end") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate end,
+			@AuthenticationPrincipal Jwt jwt) {
 
-	// Getting mood entries in a date range
-	@GetMapping("/user/{userId}/range")
-	public List<MoodEntry> getMoodEntriesInRange(
-			@PathVariable String userId,
-			@RequestParam String start,
-			@RequestParam String end) {
-		LocalDateTime startTime = LocalDateTime.parse(start);
-		LocalDateTime endTime = LocalDateTime.parse(end);
+		String userId = jwt.getClaimAsString("sub");
 
-		return userRepository.findById(userId)
-				.map(user -> moodEntryRepository.findByUserAndTimestampBetween(user, startTime, endTime))
-				.orElseThrow(() -> new RuntimeException("User not found."));
-	}
+		// Convert LocalDate to LocalDateTime for comparison
+		LocalDateTime startDateTime = start.atStartOfDay();
+		LocalDateTime endDateTime = end.atTime(23, 59, 59);
 
-	// Delete a mood entry
-	@DeleteMapping("/{entryId}")
-	public void deleteMoodEntry(@PathVariable Long entryId) {
-		moodEntryRepository.deleteById(entryId);
+		// Fetch entries for this user in date range
+		List<MoodEntry> entries = moodEntryRepository.findByUserIdAndTimestampBetween(userId, startDateTime,
+				endDateTime);
+
+		if (entries.isEmpty()) {
+			return ResponseEntity.noContent().build();
+		}
+
+		moodEntryRepository.deleteAll(entries);
+
+		return ResponseEntity.noContent().build();
 	}
 }
