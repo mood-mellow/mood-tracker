@@ -1,7 +1,7 @@
 package com.moodtracker.backend.service;
 
-import com.example.moodtracker.model.MoodEntry;
-import com.example.moodtracker.repository.MoodEntryRepository;
+import com.moodtracker.backend.model.MoodEntry;
+import com.moodtracker.backend.repository.MoodEntryRepository;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
@@ -16,9 +16,9 @@ public class MoodEntryService {
         this.moodEntryRepository = moodEntryRepository;
     }
 
-    public List<MoodEntry> getMoodEntriesForUser(Long userId, LocalDate day) {
-		LocalDateTime startOfDay = day.atStartOfDay();
-		LocalDateTime endOfDay = day.atTime(23, 59, 59);
+    public List<MoodEntry> getMoodEntriesForUser(String userId, LocalDate day) {
+        LocalDateTime startOfDay = day.atStartOfDay();
+        LocalDateTime endOfDay = day.atTime(23, 59, 59);
         return moodEntryRepository.findByUserIdAndTimestampBetween(userId, startOfDay, endOfDay);
     }
 }

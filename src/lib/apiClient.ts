@@ -38,11 +38,10 @@ export async function apiFetch<T = unknown>(
 ): Promise<T> {
   const session = await fetchAuthSession();
   const token = session.tokens?.accessToken.toString();
-  console.log(token);
 
   const headers = {
     ...(options.headers ?? {}),
-    // "Content-Type": "application/json",
+    "Content-Type": "application/json",
     ...(token ? { Authorization: `Bearer ${token}` } : {}),
   };
 
@@ -57,4 +56,52 @@ export async function apiFetch<T = unknown>(
   }
 
   return response.json() as Promise<T>;
+}
+
+/**
+ * Performs a DELETE request with the Authorization header automatically attached.
+ *
+ * This utility is specifically for DELETE operations that typically return empty responses
+ * (204 No Content), avoiding JSON parsing errors.
+ *
+ * @param {string} url - The absolute or relative URL of the API endpoint.
+ * @param {Omit<RequestInit, 'method'>} [options] - Optional fetch configuration, excluding method.
+ *
+ * @returns {Promise<void>} - A promise that resolves when the delete is successful.
+ *
+ * @throws {Error} - Throws an error if the response is not OK (status >= 400).
+ *
+ * @example
+ * ```typescript
+ * import { apiDelete } from "@/lib/apiClient";
+ *
+ * await apiDelete("https://api.example.com/user/123");
+ * ```
+ */
+export async function apiDelete(
+  url: string,
+  options: Omit<RequestInit, "method"> = {},
+): Promise<void> {
+  const session = await fetchAuthSession();
+  const token = session.tokens?.accessToken.toString();
+
+  const headers = {
+    ...(options.headers ?? {}),
+    "Content-Type": "application/json",
+    ...(token ? { Authorization: `Bearer ${token}` } : {}),
+  };
+
+  const response = await fetch(url, {
+    ...options,
+    method: "DELETE",
+    headers,
+  });
+
+  if (!response.ok) {
+    const errorText = await response.text();
+    throw new Error(`API Error: ${response.status} - ${errorText}`);
+  }
+
+  // Don't try to parse response body for DELETE requests
+  return;
 }

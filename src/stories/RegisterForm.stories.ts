@@ -1,11 +1,22 @@
 import type { Meta, StoryObj } from "@storybook/nextjs";
 import { Toaster } from "sonner";
-import Register from "~/components/registerForm";
+import RegisterForm from "~/components/registerForm";
 import React from "react";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 
-const meta: Meta<typeof Register> = {
+// Create a QueryClient instance for Storybook
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      retry: false, // Disable retries in Storybook
+      staleTime: 0,
+    },
+  },
+});
+
+const meta: Meta<typeof RegisterForm> = {
   title: "Components/RegisterPreview",
-  component: Register,
+  component: RegisterForm,
   tags: ["autodocs"],
   parameters: {
     layout: "centered",
@@ -13,16 +24,20 @@ const meta: Meta<typeof Register> = {
   decorators: [
     (Story: React.ComponentType) =>
       React.createElement(
-        "div",
-        { style: { minHeight: "100vh", padding: "2rem" } },
-        React.createElement(Story),
-        React.createElement(Toaster, {
-          position: "top-right",
-          richColors: true,
-        }),
+        QueryClientProvider,
+        { client: queryClient },
+        React.createElement(
+          "div",
+          { style: { minHeight: "100vh", padding: "2rem" } },
+          React.createElement(Story),
+          React.createElement(Toaster, {
+            position: "top-right",
+            richColors: true,
+          }),
+        ),
       ),
   ],
-} satisfies Meta<typeof Register>;
+} satisfies Meta<typeof RegisterForm>;
 
 export default meta;
 type Story = StoryObj<typeof meta>;

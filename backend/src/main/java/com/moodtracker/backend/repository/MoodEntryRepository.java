@@ -11,9 +11,9 @@ import java.util.List;
 @Repository
 public interface MoodEntryRepository extends JpaRepository<MoodEntry, Long> {
     List<MoodEntry> findByUserIdAndTimestampBetween(
-        String userId,
-        LocalDateTime start,
-        LocalDateTime end
-    );
-}
+            String userId,
+            LocalDateTime start,
+            LocalDateTime end);
 
+    List<MoodEntry> findByUserId(String userId);
+}

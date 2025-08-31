@@ -1,6 +1,5 @@
 import type { Meta, StoryObj } from "@storybook/nextjs";
-import { Toaster } from "sonner";
-import LoginForm from "~/components/loginForm";
+import { ActivityTagsPopover } from "~/components/activityTags/activityTagsPopover";
 import React from "react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 
@@ -14,19 +13,12 @@ const queryClient = new QueryClient({
   },
 });
 
-const meta: Meta<typeof LoginForm> = {
-  title: "Components/LoginForm",
-  component: LoginForm,
+const meta: Meta<typeof ActivityTagsPopover> = {
+  title: "Components/ActivityTagsPopover",
+  component: ActivityTagsPopover,
   tags: ["autodocs"],
   parameters: {
     layout: "centered",
-    nextjs: {
-      appDirectory: true,
-      navigation: {
-        pathname: "/login",
-        query: {},
-      },
-    },
   },
   decorators: [
     (Story: React.ComponentType) =>
@@ -37,14 +29,10 @@ const meta: Meta<typeof LoginForm> = {
           "div",
           { style: { minHeight: "100vh", padding: "2rem" } },
           React.createElement(Story),
-          React.createElement(Toaster, {
-            position: "top-right",
-            richColors: true,
-          }),
         ),
       ),
   ],
-} satisfies Meta<typeof LoginForm>;
+} satisfies Meta<typeof ActivityTagsPopover>;
 
 export default meta;
 type Story = StoryObj<typeof meta>;
