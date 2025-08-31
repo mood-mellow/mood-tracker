@@ -28,10 +28,18 @@ import { useMutation } from "@tanstack/react-query";
 import { useState, useEffect } from "react";
 import { type ActivityTag, useActivityTags } from "~/hooks/activityTagHooks";
 import { X } from "lucide-react";
-import { ActivityTagsPopover } from "./activityTags/activityTagsPopover";
+import { ActivityTagsPopover } from "~/components/activityTags/activityTagsPopover";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "~/components/ui/select";
 
 export const moodEntryFormSchema = z.object({
   mood: z.string().min(1, { message: "Please select a mood" }),
+  emoji: z.string().max(1, { message: "Please select an emoji" }),
   journal: z
     .string()
     .min(1, { message: "Please write something in your journal" }),
@@ -42,15 +50,17 @@ const formSchema = moodEntryFormSchema;
 
 // Mood options with emojis
 const MOOD_OPTIONS = [
-  { value: "very_happy", label: "Very Happy", emoji: "😄" },
-  { value: "happy", label: "Happy", emoji: "😊" },
-  { value: "neutral", label: "Neutral", emoji: "😐" },
-  { value: "sad", label: "Sad", emoji: "😢" },
-  { value: "very_sad", label: "Very Sad", emoji: "😭" },
-  { value: "angry", label: "Angry", emoji: "😠" },
-  { value: "anxious", label: "Anxious", emoji: "😰" },
-  { value: "excited", label: "Excited", emoji: "🤩" },
+  { value: "very_happy", label: "Very Happy" },
+  { value: "happy", label: "Happy" },
+  { value: "neutral", label: "Neutral" },
+  { value: "sad", label: "Sad" },
+  { value: "very_sad", label: "Very Sad" },
+  { value: "angry", label: "Angry" },
+  { value: "anxious", label: "Anxious" },
+  { value: "excited", label: "Excited" },
 ];
+
+const EMOJI_OPTIONS = ["😄", "😊", "😐", "😢", "😭", "😠", "😰", "🤩"];
 
 async function createMoodEntry(values: z.infer<typeof formSchema>) {
   // This would typically call your backend API
@@ -91,6 +101,7 @@ export default function MoodEntryForm() {
     resolver: zodResolver(formSchema),
     defaultValues: {
       mood: "",
+      emoji: "",
       journal: "",
       activity: "",
     },
@@ -148,44 +159,78 @@ export default function MoodEntryForm() {
                   control={form.control}
                   name="mood"
                   render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>How are you feeling?</FormLabel>
-                      <div className="space-y-3">
-                        {/* Emoji Selection Grid */}
-                        <div className="grid grid-cols-4 gap-2">
-                          {MOOD_OPTIONS.map((mood) => (
-                            <button
-                              key={mood.value}
-                              type="button"
-                              onClick={() => {
-                                field.onChange(mood.value);
-                                setSelectedMood(mood.value);
-                              }}
-                              className={`hover:bg-accent flex flex-col items-center justify-center rounded-lg border-2 p-3 transition-all ${
-                                field.value === mood.value
-                                  ? "border-primary bg-primary/10"
-                                  : "border-border"
-                              }`}
-                            >
-                              <span className="text-2xl">{mood.emoji}</span>
-                              <span className="mt-1 text-center text-xs">
-                                {mood.label}
-                              </span>
-                            </button>
-                          ))}
-                        </div>
-                        {selectedMood && (
-                          <p className="text-muted-foreground text-sm">
-                            Selected:{" "}
-                            {
-                              MOOD_OPTIONS.find((m) => m.value === selectedMood)
-                                ?.label
-                            }
-                          </p>
-                        )}
-                      </div>
-                      <FormMessage />
-                    </FormItem>
+                    <div className="space-y-3">
+                      <FormItem>
+                        <FormLabel>How are you feeling?</FormLabel>
+                        <FormControl>
+                          <Select
+                            onValueChange={field.onChange}
+                            value={field.value}
+                          >
+                            <SelectTrigger>
+                              <SelectValue placeholder="Select your emoji" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {EMOJI_OPTIONS.map((emoji) => (
+                                <SelectItem key={emoji} value={emoji}>
+                                  {emoji}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                      {selectedMood && (
+                        <p className="text-muted-foreground text-sm">
+                          Selected:{" "}
+                          {
+                            MOOD_OPTIONS.find((m) => m.value === selectedMood)
+                              ?.label
+                          }
+                        </p>
+                      )}
+                    </div>
+                  )}
+                />
+
+                {/* Emoji Selection */}
+                <FormField
+                  control={form.control}
+                  name="emoji"
+                  render={({ field }) => (
+                    <div className="space-y-3">
+                      <FormItem>
+                        <FormLabel>How are you feeling?</FormLabel>
+                        <FormControl>
+                          <Select
+                            onValueChange={field.onChange}
+                            value={field.value}
+                          >
+                            <SelectTrigger>
+                              <SelectValue placeholder="Select your mood" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {MOOD_OPTIONS.map((mood) => (
+                                <SelectItem key={mood.value} value={mood.value}>
+                                  {mood.label}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                      {selectedMood && (
+                        <p className="text-muted-foreground text-sm">
+                          Selected:{" "}
+                          {
+                            MOOD_OPTIONS.find((m) => m.value === selectedMood)
+                              ?.label
+                          }
+                        </p>
+                      )}
+                    </div>
                   )}
                 />
 
