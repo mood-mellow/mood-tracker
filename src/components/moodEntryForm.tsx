@@ -36,6 +36,14 @@ import {
   SelectTrigger,
   SelectValue,
 } from "~/components/ui/select";
+import {
+  ColorPicker,
+  ColorPickerEyeDropper,
+  ColorPickerFormat,
+  ColorPickerHue,
+  ColorPickerOutput,
+  ColorPickerSelection,
+} from "~/components/ui/shadcn-io/color-picker";
 
 export const moodEntryFormSchema = z.object({
   mood: z.string().min(1, { message: "Please select a mood" }),
@@ -44,6 +52,7 @@ export const moodEntryFormSchema = z.object({
     .string()
     .min(1, { message: "Please write something in your journal" }),
   activity: z.string().min(1, { message: "Please select an activity" }),
+  color: z.string().min(1, { message: "Please select a color" }),
 });
 
 const formSchema = moodEntryFormSchema;
@@ -61,6 +70,18 @@ const MOOD_OPTIONS = [
 ];
 
 const EMOJI_OPTIONS = ["😄", "😊", "😐", "😢", "😭", "😠", "😰", "🤩"];
+
+// Color options for mood entries
+const COLOR_OPTIONS = [
+  { value: "#ef4444", label: "Red" },
+  { value: "#f97316", label: "Orange" },
+  { value: "#eab308", label: "Yellow" },
+  { value: "#22c55e", label: "Green" },
+  { value: "#3b82f6", label: "Blue" },
+  { value: "#8b5cf6", label: "Purple" },
+  { value: "#ec4899", label: "Pink" },
+  { value: "#64748b", label: "Gray" },
+];
 
 async function createMoodEntry(values: z.infer<typeof formSchema>) {
   // This would typically call your backend API
@@ -104,6 +125,7 @@ export default function MoodEntryForm() {
       emoji: "",
       journal: "",
       activity: "",
+      color: "",
     },
   });
 
@@ -231,6 +253,52 @@ export default function MoodEntryForm() {
                         </p>
                       )}
                     </div>
+                  )}
+                />
+
+                {/* Color Selection */}
+                <FormField
+                  control={form.control}
+                  name="color"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>
+                        Pick a color that represents your mood
+                      </FormLabel>
+                      <FormControl>
+                        <div className="space-y-3">
+                          <ColorPicker className="bg-background max-w-sm rounded-md border p-4 shadow-sm">
+                            <ColorPickerSelection className="h-48 w-full rounded-md" />
+                            <div className="flex items-center gap-4">
+                              <div className="grid w-full gap-1">
+                                <ColorPickerHue />
+                              </div>
+                            </div>
+                            <div className="flex items-center gap-2">
+                              {/* <ColorPickerOutput /> */}
+                              <ColorPickerFormat />
+                            </div>
+                          </ColorPicker>
+                          {field.value && (
+                            <div className="flex items-center gap-2">
+                              <div
+                                className="h-4 w-4 rounded-full border"
+                                style={{ backgroundColor: field.value }}
+                              />
+                              <span className="text-muted-foreground text-sm">
+                                Selected:{" "}
+                                {
+                                  COLOR_OPTIONS.find(
+                                    (c) => c.value === field.value,
+                                  )?.label
+                                }
+                              </span>
+                            </div>
+                          )}
+                        </div>
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
                   )}
                 />
 
