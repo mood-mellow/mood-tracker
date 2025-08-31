@@ -7,7 +7,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -22,6 +21,7 @@ import com.moodtracker.backend.model.ActivityTag;
 import com.moodtracker.backend.model.User;
 import com.moodtracker.backend.repository.ActivityTagRepository;
 import com.moodtracker.backend.repository.UserRepository;
+import com.moodtracker.backend.util.JwtUtil;
 
 @RestController
 @RequestMapping("/activity-tags")
@@ -35,6 +35,9 @@ public class ActivityTagController {
     @Autowired
     private UserRepository userRepository;
 
+    @Autowired
+    private JwtUtil jwtUtil;
+
     @GetMapping
     public List<ActivityTag> getAllTags() {
         return activityTagRepository.findAll();
@@ -46,7 +49,7 @@ public class ActivityTagController {
         try {
             logger.info("Received request to update activity tag with ID: {}", id);
 
-            String userId = getCurrentUserId(auth);
+            String userId = jwtUtil.extractUserId(auth);
             logger.info("User ID from auth: {}", userId);
 
             // Find the existing activity tag
@@ -81,7 +84,7 @@ public class ActivityTagController {
         try {
             logger.info("Received request to create activity tag: {}", tag.getLabel());
 
-            String userId = getCurrentUserId(auth);
+            String userId = jwtUtil.extractUserId(auth);
             logger.info("Looking for user with ID: {}", userId);
 
             User currentUser = userRepository.findById(userId)
@@ -105,37 +108,5 @@ public class ActivityTagController {
     @DeleteMapping("/{id}")
     public void deleteTag(@PathVariable String id) {
         activityTagRepository.deleteById(id);
-    }
-
-    /**
-     * Extract user ID from JWT token or authentication context
-     */
-    private String getCurrentUserId(Authentication auth) {
-        if (auth == null) {
-            throw new RuntimeException("No authentication found");
-        }
-
-        // For JWT tokens (AWS Cognito)
-        if (auth.getPrincipal() instanceof Jwt) {
-            Jwt jwt = (Jwt) auth.getPrincipal();
-
-            // AWS Cognito typically uses 'sub' claim for user ID
-            String userId = jwt.getClaimAsString("sub");
-            if (userId != null) {
-                return userId;
-            }
-
-            // Fallback to username claim
-            String username = jwt.getClaimAsString("username");
-            if (username != null) {
-                return username;
-            }
-
-            // Last fallback to subject
-            return jwt.getSubject();
-        }
-
-        // For other authentication types, use the name
-        return auth.getName();
     }
 }
