@@ -22,16 +22,13 @@ import {
   CardTitle,
 } from "~/components/ui/card";
 import { Textarea } from "~/components/ui/textarea";
-import {
-  Select,
-  SelectTrigger,
-  SelectContent,
-  SelectItem,
-  SelectValue,
-} from "~/components/ui/select";
+import { Badge } from "~/components/ui/badge";
 // import { moodEntryFormSchema } from "~/lib/validation-schemas";
 import { useMutation } from "@tanstack/react-query";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { type ActivityTag, useActivityTags } from "~/hooks/activityTagHooks";
+import { X } from "lucide-react";
+import { ActivityTagsPopover } from "./activityTags/activityTagsPopover";
 
 export const moodEntryFormSchema = z.object({
   mood: z.string().min(1, { message: "Please select a mood" }),
@@ -55,22 +52,6 @@ const MOOD_OPTIONS = [
   { value: "excited", label: "Excited", emoji: "🤩" },
 ];
 
-// Activity options (this could come from the backend ActivityTag repository)
-const ACTIVITY_OPTIONS = [
-  { value: "work", label: "Work" },
-  { value: "exercise", label: "Exercise" },
-  { value: "socializing", label: "Socializing" },
-  { value: "family_time", label: "Family Time" },
-  { value: "hobbies", label: "Hobbies" },
-  { value: "relaxation", label: "Relaxation" },
-  { value: "learning", label: "Learning" },
-  { value: "travel", label: "Travel" },
-  { value: "entertainment", label: "Entertainment" },
-  { value: "chores", label: "Chores" },
-  { value: "eating", label: "Eating" },
-  { value: "sleep", label: "Sleep" },
-];
-
 async function createMoodEntry(values: z.infer<typeof formSchema>) {
   // This would typically call your backend API
   // For now, just simulate the API call
@@ -80,7 +61,31 @@ async function createMoodEntry(values: z.infer<typeof formSchema>) {
 }
 
 export default function MoodEntryForm() {
+  const { data: activityTags = [] } = useActivityTags();
+  const [selectedActivityTags, setSelectedActivityTags] = useState<
+    ActivityTag[]
+  >([]);
   const [selectedMood, setSelectedMood] = useState<string>("");
+
+  // Sync selected tags with updated data from server
+  // incase the user wants to update a tag
+  useEffect(() => {
+    if (selectedActivityTags.length > 0 && activityTags.length > 0) {
+      setSelectedActivityTags((prevSelected) =>
+        prevSelected
+          .map((selectedTag) => {
+            const updatedTag = activityTags.find(
+              (tag) => tag.id === selectedTag.id,
+            );
+            return updatedTag ?? selectedTag; // Use updated data if available, fallback to original
+          })
+          .filter((tag) =>
+            // Remove tags that no longer exist
+            activityTags.some((serverTag) => serverTag.id === tag.id),
+          ),
+      );
+    }
+  }, [activityTags, selectedActivityTags.length]);
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -99,6 +104,7 @@ export default function MoodEntryForm() {
       // Reset form after successful submission
       form.reset();
       setSelectedMood("");
+      setSelectedActivityTags([]);
     },
     onError: (error) => {
       toast.error("Failed to save mood entry.", {
@@ -107,8 +113,19 @@ export default function MoodEntryForm() {
     },
   });
 
+  const handleActivityTagSelect = (tag: ActivityTag) => {
+    if (!selectedActivityTags.find((t) => t.id === tag.id)) {
+      setSelectedActivityTags((prev) => [...prev, tag]);
+    }
+  };
+
+  const handleActivityTagRemove = (tagId: string) => {
+    setSelectedActivityTags((prev) => prev.filter((tag) => tag.id !== tagId));
+  };
+
   async function onSubmit(values: z.infer<typeof formSchema>) {
     console.log("Mood entry form submit event triggered");
+    console.log("Selected activity tags:", selectedActivityTags);
     moodEntryMutation.mutate(values);
   }
 
@@ -178,29 +195,48 @@ export default function MoodEntryForm() {
                   name="activity"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel htmlFor="activity">
-                        What were you doing?
-                      </FormLabel>
-                      <FormControl>
-                        <Select
-                          onValueChange={field.onChange}
-                          value={field.value}
-                        >
-                          <SelectTrigger>
-                            <SelectValue placeholder="Select an activity" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            {ACTIVITY_OPTIONS.map((activity) => (
-                              <SelectItem
-                                key={activity.value}
-                                value={activity.value}
+                      <div className="flex items-center justify-between">
+                        <FormLabel htmlFor="activity">
+                          What were you doing?
+                        </FormLabel>
+                        <div className="flex gap-2">
+                          <ActivityTagsPopover
+                            selectedTags={selectedActivityTags}
+                            onTagSelect={handleActivityTagSelect}
+                            onTagRemove={handleActivityTagRemove}
+                          />
+                        </div>
+                      </div>
+
+                      {/* Selected Activity Tags */}
+                      {selectedActivityTags.length > 0 && (
+                        <div className="space-y-2">
+                          <p className="text-muted-foreground text-sm">
+                            Selected activities:
+                          </p>
+                          <div className="flex flex-wrap gap-2">
+                            {selectedActivityTags.map((tag) => (
+                              <Badge
+                                key={tag.id}
+                                variant="outline"
+                                className={`flex items-center gap-1`}
                               >
-                                {activity.label}
-                              </SelectItem>
+                                {tag.label}
+                                <button
+                                  type="button"
+                                  onClick={() =>
+                                    handleActivityTagRemove(tag.id)
+                                  }
+                                  className="hover:bg-destructive/20 ml-1 rounded-full p-1"
+                                >
+                                  <X className="h-3 w-3" />
+                                </button>
+                              </Badge>
                             ))}
-                          </SelectContent>
-                        </Select>
-                      </FormControl>
+                          </div>
+                        </div>
+                      )}
+
                       <FormMessage />
                     </FormItem>
                   )}
