@@ -4,15 +4,19 @@ import java.util.List;
 import java.util.Map;
 
 public class MoodSummaryResponse {
+	private int week;
+	private double weeklyAvgMood;
     private List<DaySummary> days;
 
-    public MoodSummaryResponse(List<DaySummary> days) {
-        this.days = days;
+    public MoodSummaryResponse(int week, double weeklyAvgMood, List<DaySummary> days) {
+        this.week = week;
+		this.weeklyAvgMood = weeklyAvgMood;
+		this.days = days;
     }
 
-    public List<DaySummary> getDays() {
-        return days;
-    }
+	public int getWeek() { return week; }
+	public double getWeeklyAvgMood() { return weeklyAvgMood; }
+    public List<DaySummary> getDays() { return days; }
 
     public static class DaySummary {
         private String date; // YYYY-MM-DD
