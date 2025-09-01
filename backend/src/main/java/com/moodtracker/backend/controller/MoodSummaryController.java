@@ -16,7 +16,7 @@ public class MoodSummaryController {
     @GetMapping
     public MoodSummaryResponse getWeeklySummary(
             @RequestParam("week") String week,
-            @RequestParam("userId") Long userId) {
+            @RequestParam("userId") String userId) {
         LocalDate startOfWeek = LocalDate.parse(week);
         return moodSummaryService.getWeeklySummary(userId, startOfWeek);
     }
