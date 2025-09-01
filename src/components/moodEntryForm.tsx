@@ -38,16 +38,7 @@ import {
 } from "~/components/ui/select";
 
 import { ColorPicker } from "./ui/color-picker";
-
-export const moodEntryFormSchema = z.object({
-  mood: z.string().min(1, { message: "Please select a mood" }),
-  emoji: z.string().min(1, { message: "Please select an emoji" }),
-  journal: z
-    .string()
-    .min(1, { message: "Please write something in your journal" }),
-  activity: z.string().min(1, { message: "Please select an activity" }),
-  color: z.string().min(1, { message: "Please select a color" }),
-});
+import { createMoodEntry, moodEntryFormSchema } from "~/hooks/moodEntryHooks";
 
 const formSchema = moodEntryFormSchema;
 
@@ -64,14 +55,6 @@ const MOOD_OPTIONS = [
 ];
 
 const EMOJI_OPTIONS = ["😄", "😊", "😐", "😢", "😭", "😠", "😰", "🤩"];
-
-async function createMoodEntry(values: z.infer<typeof formSchema>) {
-  // This would typically call your backend API
-  // For now, just simulate the API call
-  await new Promise((resolve) => setTimeout(resolve, 1000));
-  console.log("Creating mood entry:", values);
-  return { success: true, data: values };
-}
 
 export default function MoodEntryForm() {
   const { data: activityTags = [] } = useActivityTags();
@@ -106,7 +89,7 @@ export default function MoodEntryForm() {
       mood: "",
       emoji: "",
       journal: "",
-      activity: "",
+      activityTagIds: [],
       color: "#51976b",
     },
   });
@@ -132,7 +115,10 @@ export default function MoodEntryForm() {
     if (!selectedActivityTags.find((t) => t.id === tag.id)) {
       const newTags = [...selectedActivityTags, tag];
       setSelectedActivityTags(newTags);
-      form.setValue("activity", newTags.map((t) => t.label).join(", "));
+      form.setValue(
+        "activityTagIds",
+        newTags.map((t) => t.id),
+      );
     }
   };
 
@@ -140,7 +126,10 @@ export default function MoodEntryForm() {
     const newTags = selectedActivityTags.filter((tag) => tag.id !== tagId);
     setSelectedActivityTags(newTags);
     // Update the form field with the remaining activity tags
-    form.setValue("activity", newTags.map((t) => t.label).join(", "));
+    form.setValue(
+      "activityTagIds",
+      newTags.map((t) => t.id),
+    );
   };
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
@@ -257,7 +246,7 @@ export default function MoodEntryForm() {
               {/* Activity Selection */}
               <FormField
                 control={form.control}
-                name="activity"
+                name="activityTagIds"
                 render={({ field }) => (
                   <FormItem>
                     <div className="flex items-center justify-between">

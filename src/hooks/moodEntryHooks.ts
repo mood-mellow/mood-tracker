@@ -3,11 +3,14 @@ import z from "zod";
 
 export const moodEntryFormSchema = z.object({
   mood: z.string().min(1, { message: "Please select a mood" }),
-  emoji: z.string().max(1, { message: "Please select an emoji" }),
+  emoji: z.string().min(1, { message: "Please select an emoji" }),
   journal: z
     .string()
     .min(1, { message: "Please write something in your journal" }),
-  activity: z.string().min(1, { message: "Please select an activity" }),
+  activityTagIds: z
+    .string()
+    .array()
+    .min(1, { message: "Please select an activity" }),
   color: z.string().min(1, { message: "Please select a color" }),
 });
 
@@ -19,10 +22,11 @@ export const createMoodEntry = async (
     {
       method: "POST",
       body: JSON.stringify({
-        journal_entry: data.journal,
+        journalEntry: data.journal,
         mood: data.mood,
         emoji: data.emoji,
         color: data.color,
+        activityTagIds: data.activityTagIds,
       }),
     },
   );
