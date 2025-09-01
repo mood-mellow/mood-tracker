@@ -16,7 +16,7 @@ public class MoodSummaryService {
     @Autowired
     private MoodEntryRepository moodEntryRepository;
 
-    public MoodSummaryResponse getWeeklySummary(Long userId, LocalDate startOfWeek) {
+    public MoodSummaryResponse getWeeklySummary(String userId, LocalDate startOfWeek) {
         LocalDate endOfWeek = startOfWeek.plusDays(6);
 
         // Fetch entries between startOfWeek and endOfWeek
