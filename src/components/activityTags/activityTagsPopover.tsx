@@ -117,7 +117,7 @@ export function ActivityTagsPopover({
   return (
     <Popover>
       <PopoverTrigger asChild>
-        <Button variant="outline">
+        <Button variant="outline" size="sm">
           <Plus />
           Select Activities
         </Button>
