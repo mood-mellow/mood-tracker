@@ -77,7 +77,17 @@ public class MoodEntryController {
 
 	// Delete a mood entry
 	@DeleteMapping("/{entryId}")
-	public void deleteMoodEntry(@PathVariable String entryId) {
-		moodEntryRepository.deleteById(entryId);
-	}
+	public void deleteMoodEntry(@PathVariable String entryId, Authentication authentication) {
+    Jwt jwt = (Jwt) authentication.getPrincipal();
+    String userId = jwt.getClaimAsString("sub");
+
+    MoodEntry entry = moodEntryRepository.findById(entryId)
+            .orElseThrow(() -> new RuntimeException("Entry not found"));
+
+    if (!entry.getUser().getId().equals(userId)) {
+        throw new RuntimeException("Forbidden: cannot delete another user's entry");
+    }
+
+    moodEntryRepository.delete(entry);
+}
 }

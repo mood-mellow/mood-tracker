@@ -6,6 +6,9 @@ import com.moodtracker.backend.service.MoodSummaryService;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.security.oauth2.jwt.Jwt;
+import org.springframework.format.annotation.DateTimeFormat;
+
+import java.time.LocalDate;
 
 @RestController
 @RequestMapping("/mood-summary")
@@ -26,4 +29,16 @@ public class MoodSummaryController {
 		String userId = ((Jwt) authentication.getPrincipal()).getClaimAsString("sub");
 		return moodSummaryService.getWeeklySummary(userId, week);
 	}
+	
+	@GetMapping("/mood-summary/range")
+    public MoodSummaryResponse getSummaryForRange(
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate start,
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate end,
+            @RequestParam(defaultValue = "0") int week,
+            Authentication authentication) {
+
+        String userId = ((Jwt) authentication.getPrincipal()).getClaimAsString("sub");
+
+        return moodSummaryService.getSummaryForRange(userId, start, end, week);
+    }
 }
