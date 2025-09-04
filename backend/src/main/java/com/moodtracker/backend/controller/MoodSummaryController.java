@@ -5,19 +5,25 @@ import com.moodtracker.backend.service.MoodSummaryService;
 
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.security.oauth2.jwt.Jwt;
 
 @RestController
 @RequestMapping("/mood-summary")
 public class MoodSummaryController {
 
-    @Autowired
-    private MoodSummaryService moodSummaryService;
+	private final MoodSummaryService moodSummaryService;
 
-    @GetMapping
-    public MoodSummaryResponse getWeeklySummary(
-            @RequestParam("week") String week,
-            @RequestParam("userId") Long userId) {
-        LocalDate startOfWeek = LocalDate.parse(week);
-        return moodSummaryService.getWeeklySummary(userId, startOfWeek);
+    public MoodSummaryController(MoodSummaryService moodSummaryService) {
+        this.moodSummaryService = moodSummaryService;
     }
+	
+	// week 0 will represent last 7 days, any increments represent preceding 7 days
+	@GetMapping
+    public MoodSummaryResponse getWeeklySummary(
+        @RequestParam(defaultValue = "0") int week,
+        Authentication authentication
+	) {
+		String userId = ((Jwt) authentication.getPrincipal()).getClaimAsString("sub");
+		return moodSummaryService.getWeeklySummary(userId, week);
+	}
 }
