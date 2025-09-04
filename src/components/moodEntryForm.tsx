@@ -22,72 +22,75 @@ import {
   CardTitle,
 } from "~/components/ui/card";
 import { Textarea } from "~/components/ui/textarea";
-import {
-  Select,
-  SelectTrigger,
-  SelectContent,
-  SelectItem,
-  SelectValue,
-} from "~/components/ui/select";
+import { Badge } from "~/components/ui/badge";
 // import { moodEntryFormSchema } from "~/lib/validation-schemas";
 import { useMutation } from "@tanstack/react-query";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { type ActivityTag, useActivityTags } from "~/hooks/activityTagHooks";
+import { X } from "lucide-react";
+import { ActivityTagsPopover } from "~/components/activityTags/activityTagsPopover";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "~/components/ui/select";
 
-export const moodEntryFormSchema = z.object({
-  mood: z.string().min(1, { message: "Please select a mood" }),
-  journal: z
-    .string()
-    .min(1, { message: "Please write something in your journal" }),
-  activity: z.string().min(1, { message: "Please select an activity" }),
-});
+import { ColorPicker } from "./ui/color-picker";
+import { createMoodEntry, moodEntryFormSchema } from "~/hooks/moodEntryHooks";
 
 const formSchema = moodEntryFormSchema;
 
 // Mood options with emojis
 const MOOD_OPTIONS = [
-  { value: "very_happy", label: "Very Happy", emoji: "😄" },
-  { value: "happy", label: "Happy", emoji: "😊" },
-  { value: "neutral", label: "Neutral", emoji: "😐" },
-  { value: "sad", label: "Sad", emoji: "😢" },
-  { value: "very_sad", label: "Very Sad", emoji: "😭" },
-  { value: "angry", label: "Angry", emoji: "😠" },
-  { value: "anxious", label: "Anxious", emoji: "😰" },
-  { value: "excited", label: "Excited", emoji: "🤩" },
+  { value: "very_happy", label: "Very Happy" },
+  { value: "happy", label: "Happy" },
+  { value: "neutral", label: "Neutral" },
+  { value: "sad", label: "Sad" },
+  { value: "very_sad", label: "Very Sad" },
+  { value: "angry", label: "Angry" },
+  { value: "anxious", label: "Anxious" },
+  { value: "excited", label: "Excited" },
 ];
 
-// Activity options (this could come from the backend ActivityTag repository)
-const ACTIVITY_OPTIONS = [
-  { value: "work", label: "Work" },
-  { value: "exercise", label: "Exercise" },
-  { value: "socializing", label: "Socializing" },
-  { value: "family_time", label: "Family Time" },
-  { value: "hobbies", label: "Hobbies" },
-  { value: "relaxation", label: "Relaxation" },
-  { value: "learning", label: "Learning" },
-  { value: "travel", label: "Travel" },
-  { value: "entertainment", label: "Entertainment" },
-  { value: "chores", label: "Chores" },
-  { value: "eating", label: "Eating" },
-  { value: "sleep", label: "Sleep" },
-];
-
-async function createMoodEntry(values: z.infer<typeof formSchema>) {
-  // This would typically call your backend API
-  // For now, just simulate the API call
-  await new Promise((resolve) => setTimeout(resolve, 1000));
-  console.log("Creating mood entry:", values);
-  return { success: true, data: values };
-}
+const EMOJI_OPTIONS = ["😄", "😊", "😐", "😢", "😭", "😠", "😰", "🤩"];
 
 export default function MoodEntryForm() {
+  const { data: activityTags = [] } = useActivityTags();
+  const [selectedActivityTags, setSelectedActivityTags] = useState<
+    ActivityTag[]
+  >([]);
   const [selectedMood, setSelectedMood] = useState<string>("");
+
+  // Sync selected tags with updated data from server
+  // incase the user wants to update a tag
+  useEffect(() => {
+    if (selectedActivityTags.length > 0 && activityTags.length > 0) {
+      setSelectedActivityTags((prevSelected) =>
+        prevSelected
+          .map((selectedTag) => {
+            const updatedTag = activityTags.find(
+              (tag) => tag.id === selectedTag.id,
+            );
+            return updatedTag ?? selectedTag; // Use updated data if available, fallback to original
+          })
+          .filter((tag) =>
+            // Remove tags that no longer exist
+            activityTags.some((serverTag) => serverTag.id === tag.id),
+          ),
+      );
+    }
+  }, [activityTags, selectedActivityTags.length]);
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
       mood: "",
+      emoji: "",
       journal: "",
-      activity: "",
+      activityTagIds: [],
+      color: "#51976b",
     },
   });
 
@@ -99,6 +102,7 @@ export default function MoodEntryForm() {
       // Reset form after successful submission
       form.reset();
       setSelectedMood("");
+      setSelectedActivityTags([]);
     },
     onError: (error) => {
       toast.error("Failed to save mood entry.", {
@@ -107,8 +111,30 @@ export default function MoodEntryForm() {
     },
   });
 
+  const handleActivityTagSelect = (tag: ActivityTag) => {
+    if (!selectedActivityTags.find((t) => t.id === tag.id)) {
+      const newTags = [...selectedActivityTags, tag];
+      setSelectedActivityTags(newTags);
+      form.setValue(
+        "activityTagIds",
+        newTags.map((t) => t.id),
+      );
+    }
+  };
+
+  const handleActivityTagRemove = (tagId: string) => {
+    const newTags = selectedActivityTags.filter((tag) => tag.id !== tagId);
+    setSelectedActivityTags(newTags);
+    // Update the form field with the remaining activity tags
+    form.setValue(
+      "activityTagIds",
+      newTags.map((t) => t.id),
+    );
+  };
+
   async function onSubmit(values: z.infer<typeof formSchema>) {
     console.log("Mood entry form submit event triggered");
+    console.log("Selected activity tags:", selectedActivityTags);
     moodEntryMutation.mutate(values);
   }
 
@@ -125,118 +151,171 @@ export default function MoodEntryForm() {
         <CardContent>
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-              <div className="grid gap-4">
-                {/* Mood Selection with Emojis */}
-                <FormField
-                  control={form.control}
-                  name="mood"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>How are you feeling?</FormLabel>
-                      <div className="space-y-3">
-                        {/* Emoji Selection Grid */}
-                        <div className="grid grid-cols-4 gap-2">
+              {/* Mood Selection */}
+              <FormField
+                control={form.control}
+                name="mood"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>How are you feeling?</FormLabel>
+                    <FormControl>
+                      <Select
+                        onValueChange={(value) => {
+                          field.onChange(value);
+                          setSelectedMood(value);
+                        }}
+                        value={field.value}
+                      >
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select your mood" />
+                        </SelectTrigger>
+                        <SelectContent>
                           {MOOD_OPTIONS.map((mood) => (
-                            <button
-                              key={mood.value}
-                              type="button"
-                              onClick={() => {
-                                field.onChange(mood.value);
-                                setSelectedMood(mood.value);
-                              }}
-                              className={`hover:bg-accent flex flex-col items-center justify-center rounded-lg border-2 p-3 transition-all ${
-                                field.value === mood.value
-                                  ? "border-primary bg-primary/10"
-                                  : "border-border"
-                              }`}
-                            >
-                              <span className="text-2xl">{mood.emoji}</span>
-                              <span className="mt-1 text-center text-xs">
-                                {mood.label}
-                              </span>
-                            </button>
+                            <SelectItem key={mood.value} value={mood.value}>
+                              {mood.label}
+                            </SelectItem>
                           ))}
-                        </div>
-                        {selectedMood && (
-                          <p className="text-muted-foreground text-sm">
-                            Selected:{" "}
-                            {
-                              MOOD_OPTIONS.find((m) => m.value === selectedMood)
-                                ?.label
+                        </SelectContent>
+                      </Select>
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              {/* Emoji Selection */}
+              <FormField
+                control={form.control}
+                name="emoji"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Pick an emoji</FormLabel>
+                    <FormControl>
+                      <Select
+                        onValueChange={field.onChange}
+                        value={field.value}
+                      >
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select your emoji" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {EMOJI_OPTIONS.map((emoji) => (
+                            <SelectItem key={emoji} value={emoji}>
+                              {emoji}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              {/* Color Selection */}
+              <FormField
+                control={form.control}
+                name="color"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>
+                      Pick a color that represents your mood
+                    </FormLabel>
+                    <FormControl>
+                      <div className="flex items-center gap-3">
+                        <ColorPicker
+                          onChange={(v) => {
+                            if (typeof v === "string") {
+                              field.onChange(v);
                             }
+                          }}
+                          value={field.value}
+                        />
+                        {field.value && (
+                          <p className="text-muted-foreground text-sm">
+                            {field.value}
                           </p>
                         )}
                       </div>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
 
-                {/* Activity Selection */}
-                <FormField
-                  control={form.control}
-                  name="activity"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel htmlFor="activity">
-                        What were you doing?
-                      </FormLabel>
-                      <FormControl>
-                        <Select
-                          onValueChange={field.onChange}
-                          value={field.value}
-                        >
-                          <SelectTrigger>
-                            <SelectValue placeholder="Select an activity" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            {ACTIVITY_OPTIONS.map((activity) => (
-                              <SelectItem
-                                key={activity.value}
-                                value={activity.value}
+              {/* Activity Selection */}
+              <FormField
+                control={form.control}
+                name="activityTagIds"
+                render={({ field }) => (
+                  <FormItem>
+                    <div className="flex items-center justify-between">
+                      <FormLabel>What were you doing?</FormLabel>
+                      <ActivityTagsPopover
+                        selectedTags={selectedActivityTags}
+                        onTagSelect={handleActivityTagSelect}
+                        onTagRemove={handleActivityTagRemove}
+                      />
+                    </div>
+
+                    {/* Selected Activity Tags */}
+                    {selectedActivityTags.length > 0 && (
+                      <div className="space-y-2">
+                        <p className="text-muted-foreground text-sm">
+                          Selected activities:
+                        </p>
+                        <div className="flex flex-wrap gap-2">
+                          {selectedActivityTags.map((tag) => (
+                            <Badge
+                              key={tag.id}
+                              variant="outline"
+                              className="flex items-center gap-1"
+                            >
+                              {tag.label}
+                              <button
+                                type="button"
+                                onClick={() => handleActivityTagRemove(tag.id)}
+                                className="hover:bg-destructive/20 ml-1 rounded-full p-1"
                               >
-                                {activity.label}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
+                                <X className="h-3 w-3" />
+                              </button>
+                            </Badge>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
 
-                {/* Journal Textarea */}
-                <FormField
-                  control={form.control}
-                  name="journal"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel htmlFor="journal">
-                        What&apos;s on your mind?
-                      </FormLabel>
-                      <FormControl>
-                        <Textarea
-                          id="journal"
-                          placeholder="Write about your day, thoughts, or anything you'd like to remember..."
-                          rows={4}
-                          {...field}
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
+              {/* Journal Textarea */}
+              <FormField
+                control={form.control}
+                name="journal"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>What&apos;s on your mind?</FormLabel>
+                    <FormControl>
+                      <Textarea
+                        placeholder="Write about your day, thoughts, or anything you'd like to remember..."
+                        rows={4}
+                        {...field}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
 
-                <Button
-                  type="submit"
-                  className="w-full"
-                  disabled={moodEntryMutation.isPending}
-                  loading={moodEntryMutation.isPending}
-                >
-                  Save Mood Entry
-                </Button>
-              </div>
+              <Button
+                type="submit"
+                className="w-full"
+                disabled={moodEntryMutation.isPending}
+                loading={moodEntryMutation.isPending}
+              >
+                Save Mood Entry
+              </Button>
             </form>
           </Form>
         </CardContent>

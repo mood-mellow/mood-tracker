@@ -5,6 +5,7 @@ import { Button } from "~/components/ui/button";
 import { redirect } from "next/navigation";
 import TestApiCall from "~/components/test/testApiCall";
 import { ActivityTagsPopover } from "~/components/activityTags/activityTagsPopover";
+import MoodEntryForm from "~/components/moodEntryForm";
 
 export default function DashboardPage() {
   return (
@@ -12,7 +13,6 @@ export default function DashboardPage() {
       <TestApiCall />
       <h1>Dashboard</h1>
       <ActivityTagsPopover />
-
       <Button
         onClick={async () => {
           console.log("test");
@@ -22,6 +22,7 @@ export default function DashboardPage() {
       >
         Log Out
       </Button>
+      <MoodEntryForm />
     </main>
   );
 }
