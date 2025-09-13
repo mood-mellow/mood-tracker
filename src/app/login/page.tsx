@@ -8,8 +8,8 @@ export default function AuthPage() {
   return (
     <main className="flex flex-col gap-10">
       <RegisterForm />
-      <LoginForm />
-      <ConfirmRegisterForm />
+      {/*<LoginForm />*/}
+      {/*<ConfirmRegisterForm />*/}
     </main>
   );
 }
