@@ -112,7 +112,7 @@ export default function RegisterForm() {
           />
         </div>
 
-        <div className="flex flex-1 flex-col justify-center gap-2 md:mt-8">
+        <div className="flex flex-1 flex-col justify-center gap-4 md:mt-8">
           <CardHeader className="px-0">
             <CardTitle className="text-center text-2xl md:text-left">
               Create an Account
@@ -221,11 +221,13 @@ export default function RegisterForm() {
               </form>
             </Form>
           </CardContent>
-          <div className="mt-4 flex items-center justify-end gap-2 text-center text-sm md:mt-auto">
-            <span>Already have an account? </span>
-            <Link href="#" className="underline">
-              Login
-            </Link>
+          <div className="mt-4 flex w-full items-center justify-end gap-2 text-center text-sm md:mt-auto">
+            <div className="mr-6">
+              <span>Already have an account? </span>
+              <Link href="#" className="text-sky-500">
+                Login
+              </Link>
+            </div>
             <Button
               type="submit"
               disabled={signUpMutation.isPending}
