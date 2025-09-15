@@ -28,6 +28,7 @@ import { signIn } from "aws-amplify/auth";
 import { loginFormSchema } from "~/lib/validation-schemas";
 import { useMutation } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
+import Image from "next/image";
 
 const formSchema = loginFormSchema;
 
@@ -71,81 +72,101 @@ export default function LoginForm() {
   }
 
   return (
-    <div className="flex h-full min-h-[50vh] w-full flex-col items-center justify-center px-4">
-      <Card className="mx-auto max-w-sm">
-        <CardHeader>
-          <CardTitle className="text-2xl">Login</CardTitle>
-          <CardDescription>
-            Enter your email and password to login to your account.
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
-              <div className="grid gap-4">
-                <FormField
-                  control={form.control}
-                  name="email"
-                  render={({ field }) => (
-                    <FormItem className="grid gap-2">
-                      <FormLabel htmlFor="email">Email</FormLabel>
-                      <FormControl>
-                        <Input
-                          id="email"
-                          placeholder="johndoe@mail.com"
-                          type="email"
-                          autoComplete="email"
-                          {...field}
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={form.control}
-                  name="password"
-                  render={({ field }) => (
-                    <FormItem className="grid gap-2">
-                      <div className="flex items-center justify-between">
-                        <FormLabel htmlFor="password">Password</FormLabel>
-                        <Link
-                          href="#"
-                          className="ml-auto inline-block text-sm underline"
-                        >
-                          Forgot your password?
-                        </Link>
-                      </div>
-                      <FormControl>
-                        <PasswordInput
-                          id="password"
-                          placeholder="******"
-                          autoComplete="current-password"
-                          {...field}
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <Button
-                  type="submit"
-                  className="w-full"
-                  disabled={loginMutation.isPending}
-                  loading={loginMutation.isPending}
-                >
-                  Login
-                </Button>
-              </div>
-            </form>
-          </Form>
-          <div className="mt-4 text-center text-sm">
-            Don&apos;t have an account?{" "}
-            <Link href="#" className="underline">
-              Sign up
-            </Link>
+    <div className="flex justify-center px-4 py-8">
+      <Card className="flex h-full w-full max-w-4xl flex-col gap-6 overflow-hidden p-4 md:flex-row md:p-8">
+        <div className="flex justify-center md:justify-start">
+          <Image
+            width={450}
+            height={321}
+            src={"/login_asset.svg"}
+            alt="Register account images"
+            className="hidden w-full max-w-sm object-contain md:block"
+          />
+        </div>
+
+        <div className="flex flex-1 flex-col justify-center gap-4 md:mt-24">
+          <CardHeader className="px-0">
+            <CardTitle className="text-center text-2xl md:text-left">
+              Login
+            </CardTitle>
+            <CardDescription className="text-center md:text-left">
+              Welcome back! Enter your details to get started.
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="px-0">
+            <Form {...form}>
+              <form
+                id="login"
+                onSubmit={form.handleSubmit(onSubmit)}
+                className="space-y-6"
+              >
+                <div className="grid gap-4">
+                  <FormField
+                    control={form.control}
+                    name="email"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel htmlFor="email">Email</FormLabel>
+                        <FormControl>
+                          <Input
+                            id="email"
+                            placeholder="johndoe@mail.com"
+                            type="email"
+                            autoComplete="email"
+                            {...field}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form.control}
+                    name="password"
+                    render={({ field }) => (
+                      <FormItem>
+                        <div className="flex items-center justify-between">
+                          <FormLabel htmlFor="password">Password</FormLabel>
+                          <Link
+                            href="#"
+                            className="ml-auto inline-block text-sm underline"
+                          >
+                            Forgot your password?
+                          </Link>
+                        </div>
+                        <FormControl>
+                          <PasswordInput
+                            id="password"
+                            placeholder="******"
+                            autoComplete="current-password"
+                            {...field}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
+              </form>
+            </Form>
+          </CardContent>
+          <div className="mt-4 flex w-full items-center justify-end gap-2 text-center text-sm md:mt-auto">
+            <div className="mr-6">
+              <span>Don&apos;t have an account? </span>
+              <Link href="#" className="text-sky-500">
+                Sign up
+              </Link>
+            </div>
+            <Button
+              form="login"
+              type="submit"
+              disabled={loginMutation.isPending}
+              loading={loginMutation.isPending}
+            >
+              Login
+            </Button>
           </div>
-        </CardContent>
+        </div>
       </Card>
     </div>
   );
