@@ -28,6 +28,7 @@ import { AuthError, signUp } from "aws-amplify/auth";
 import { useMutation } from "@tanstack/react-query";
 
 import { registerFormSchema } from "~/lib/validation-schemas";
+import Image from "next/image";
 
 const formSchema = registerFormSchema;
 
@@ -63,7 +64,6 @@ export default function RegisterForm() {
         "Registration successful! Please check your email for verification.",
       );
       console.log("Next step:", data.nextStep);
-      // Handle next step (e.g., redirect to verification page)
     },
     onError: (error) => {
       if (error instanceof AuthError) {
@@ -99,120 +99,146 @@ export default function RegisterForm() {
   }
 
   return (
-    <div className="flex h-full min-h-[60vh] w-full items-center justify-center px-4">
-      <Card className="mx-auto max-w-sm">
-        <CardHeader>
-          <CardTitle className="text-2xl">Register</CardTitle>
-          <CardDescription>
-            Create a new account by filling out the form below.
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <Form {...form}>
-            <form
-              onSubmit={(e) => {
-                console.log("Form submit event triggered"); // Add this
-                void form.handleSubmit(onSubmit)(e);
-              }}
-              className="space-y-8"
+    <div className="flex justify-center px-4 py-8">
+      <Card className="flex h-full w-full max-w-4xl flex-col gap-6 overflow-hidden p-4 md:flex-row md:p-8">
+        {/* hide image on smaller screens */}
+        <div className="flex justify-center md:justify-start">
+          <Image
+            width={450}
+            height={321}
+            src={"/register_asset.svg"}
+            alt="Register account images"
+            className="hidden w-full max-w-sm object-contain md:block"
+          />
+        </div>
+
+        <div className="flex flex-1 flex-col justify-center gap-4 md:mt-8">
+          <CardHeader className="px-0">
+            <CardTitle className="text-center text-2xl md:text-left">
+              Create an Account
+            </CardTitle>
+            <CardDescription className="text-center md:text-left">
+              Welcome to Mellow, where you can access AI-powered insights and
+              challenge friends to stay on top of healthy habits.
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="px-0">
+            <Form {...form}>
+              <form
+                id="register"
+                onSubmit={(e) => {
+                  console.log("Form submit event triggered");
+                  void form.handleSubmit(onSubmit)(e);
+                }}
+                className="space-y-6"
+              >
+                <div className="grid gap-4">
+                  {/* Name Field */}
+                  <FormField
+                    control={form.control}
+                    name="name"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel htmlFor="name">Username</FormLabel>
+                        <FormControl>
+                          <Input
+                            id="name"
+                            placeholder="John"
+                            {...field}
+                            className="w-full"
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  {/* Email Field */}
+                  <FormField
+                    control={form.control}
+                    name="email"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel htmlFor="email">Email</FormLabel>
+                        <FormControl>
+                          <Input
+                            id="email"
+                            placeholder="example@mellow.com"
+                            type="email"
+                            autoComplete="email"
+                            {...field}
+                            className="w-full"
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  {/* Password Field */}
+                  <FormField
+                    control={form.control}
+                    name="password"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel htmlFor="password">Password</FormLabel>
+                        <FormControl>
+                          <PasswordInput
+                            id="password"
+                            placeholder="******"
+                            autoComplete="new-password"
+                            {...field}
+                            className="w-full"
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  {/* Confirm Password Field */}
+                  <FormField
+                    control={form.control}
+                    name="confirmPassword"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel htmlFor="confirmPassword">
+                          Confirm Password
+                        </FormLabel>
+                        <FormControl>
+                          <PasswordInput
+                            id="confirmPassword"
+                            placeholder="******"
+                            autoComplete="new-password"
+                            {...field}
+                            className="w-full"
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
+              </form>
+            </Form>
+          </CardContent>
+          <div className="mt-4 flex w-full items-center justify-end gap-2 text-center text-sm md:mt-auto">
+            <div className="mr-6">
+              <span>Already have an account? </span>
+              <Link href="#" className="text-sky-500">
+                Login
+              </Link>
+            </div>
+            <Button
+              form="register"
+              type="submit"
+              disabled={signUpMutation.isPending}
+              loading={signUpMutation.isPending}
             >
-              <div className="grid gap-4">
-                {/* Name Field */}
-                <FormField
-                  control={form.control}
-                  name="name"
-                  render={({ field }) => (
-                    <FormItem className="grid gap-2">
-                      <FormLabel htmlFor="name">Full Name</FormLabel>
-                      <FormControl>
-                        <Input id="name" placeholder="John Doe" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                {/* Email Field */}
-                <FormField
-                  control={form.control}
-                  name="email"
-                  render={({ field }) => (
-                    <FormItem className="grid gap-2">
-                      <FormLabel htmlFor="email">Email</FormLabel>
-                      <FormControl>
-                        <Input
-                          id="email"
-                          placeholder="johndoe@mail.com"
-                          type="email"
-                          autoComplete="email"
-                          {...field}
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                {/* Password Field */}
-                <FormField
-                  control={form.control}
-                  name="password"
-                  render={({ field }) => (
-                    <FormItem className="grid gap-2">
-                      <FormLabel htmlFor="password">Password</FormLabel>
-                      <FormControl>
-                        <PasswordInput
-                          id="password"
-                          placeholder="******"
-                          autoComplete="new-password"
-                          {...field}
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                {/* Confirm Password Field */}
-                <FormField
-                  control={form.control}
-                  name="confirmPassword"
-                  render={({ field }) => (
-                    <FormItem className="grid gap-2">
-                      <FormLabel htmlFor="confirmPassword">
-                        Confirm Password
-                      </FormLabel>
-                      <FormControl>
-                        <PasswordInput
-                          id="confirmPassword"
-                          placeholder="******"
-                          autoComplete="new-password"
-                          {...field}
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                <Button
-                  type="submit"
-                  className="w-full"
-                  disabled={signUpMutation.isPending}
-                  loading={signUpMutation.isPending}
-                >
-                  Register
-                </Button>
-              </div>
-            </form>
-          </Form>
-          <div className="mt-4 text-center text-sm">
-            Already have an account?{" "}
-            <Link href="#" className="underline">
-              Login
-            </Link>
+              Sign up
+            </Button>
           </div>
-        </CardContent>
+        </div>
       </Card>
     </div>
   );
