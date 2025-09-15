@@ -125,6 +125,7 @@ export default function RegisterForm() {
           <CardContent className="px-0">
             <Form {...form}>
               <form
+                id="register"
                 onSubmit={(e) => {
                   console.log("Form submit event triggered");
                   void form.handleSubmit(onSubmit)(e);
@@ -229,6 +230,7 @@ export default function RegisterForm() {
               </Link>
             </div>
             <Button
+              form="register"
               type="submit"
               disabled={signUpMutation.isPending}
               loading={signUpMutation.isPending}
