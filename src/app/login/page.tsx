@@ -11,6 +11,7 @@ export default function AuthPage() {
       style={{ backgroundImage: "url(/bbblurry.svg)" }}
     >
       <RegisterForm />
+      <LoginForm />
     </main>
   );
 }
