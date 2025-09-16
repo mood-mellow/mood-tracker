@@ -1,0 +1,32 @@
+.dashboard-widgets-container {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  grid-template-rows: repeat(2, 1fr);
+  grid-template-areas:
+    "checkin checkin suggestions"
+    "friends review review";
+}
+@media (width < 48rem) {
+  .dashboard-widgets-container {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    grid-template-rows: repeat(3, 1fr);
+    grid-template-areas:
+      "checkin checkin"
+      "suggestions friends"
+      "review review";
+  }
+}
+
+.checkin-container {
+  grid-area: checkin;
+}
+.suggestions-container {
+  grid-area: suggestions;
+}
+.friends-container {
+  grid-area: friends;
+}
+.review-container {
+  grid-area: review;
+}
