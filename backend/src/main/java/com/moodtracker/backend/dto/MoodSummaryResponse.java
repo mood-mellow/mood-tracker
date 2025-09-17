@@ -6,16 +6,19 @@ import java.util.Map;
 public class MoodSummaryResponse {
 	private int week;
 	private double weeklyAvgMood;
+	private List<Map.Entry<String, Integer>> mostCommonMoods;
     private List<DaySummary> days;
 
-    public MoodSummaryResponse(int week, double weeklyAvgMood, List<DaySummary> days) {
+    public MoodSummaryResponse(int week, double weeklyAvgMood, List<Map.Entry<String, Integer>> mostCommonMoods, List<DaySummary> days) {
         this.week = week;
 		this.weeklyAvgMood = weeklyAvgMood;
+		this.mostCommonMoods = mostCommonMoods;
 		this.days = days;
     }
 
 	public int getWeek() { return week; }
 	public double getWeeklyAvgMood() { return weeklyAvgMood; }
+	public List<Map.Entry<String, Integer>> getMostCommonMoods() { return mostCommonMoods; }
     public List<DaySummary> getDays() { return days; }
 
     public static class DaySummary {

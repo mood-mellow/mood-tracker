@@ -12,6 +12,7 @@ import java.time.LocalDate;
 
 @RestController
 @RequestMapping("/mood-summary")
+@CrossOrigin(origins = "http://localhost:3000") // for testing
 public class MoodSummaryController {
 
 	private final MoodSummaryService moodSummaryService;
@@ -19,7 +20,7 @@ public class MoodSummaryController {
     public MoodSummaryController(MoodSummaryService moodSummaryService) {
         this.moodSummaryService = moodSummaryService;
     }
-	
+
 	// week 0 will represent last 7 days, any increments represent preceding 7 days
 	@GetMapping
     public MoodSummaryResponse getWeeklySummary(
@@ -29,7 +30,7 @@ public class MoodSummaryController {
 		String userId = ((Jwt) authentication.getPrincipal()).getClaimAsString("sub");
 		return moodSummaryService.getWeeklySummary(userId, week);
 	}
-	
+
 	@GetMapping("/mood-summary/range")
     public MoodSummaryResponse getSummaryForRange(
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate start,

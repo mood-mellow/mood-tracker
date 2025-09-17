@@ -51,9 +51,17 @@ public class MoodSummaryService {
 
         List<MoodSummaryResponse.DaySummary> days = new ArrayList<>();
         List<Integer> allScores = new ArrayList<>();
+        HashMap<String, Integer> moodCounts = new HashMap<>();
 
         for (LocalDate d = startDate; !d.isAfter(endDate); d = d.plusDays(1)) {
             List<MoodEntry> dayEntries = byDate.getOrDefault(d, Collections.emptyList());
+
+            // increment each occuring mood by 1
+            for (MoodEntry me : dayEntries) {
+                String mood = me.getMood();
+                mood = MoodSummaryService.normalizeMood(mood);
+                moodCounts.merge(mood, 1, Integer::sum);
+            }
 
             // Average mood via score mapping since it will be easier for AI insights
             List<Integer> dayScores = dayEntries.stream()
@@ -90,10 +98,17 @@ public class MoodSummaryService {
                     activityCounts));
         }
 
+        List<Map.Entry<String, Integer>> mostCommonMoods = new ArrayList<>(moodCounts.entrySet());
+        mostCommonMoods.sort(Map.Entry.comparingByValue()); // asc order
+        // keep only three most common moods
+        while (mostCommonMoods.size() > 3) {
+            mostCommonMoods.removeFirst();
+        }
+
         double weeklyAvgMood = allScores.isEmpty() ? 0.0
                 : allScores.stream().mapToInt(Integer::intValue).average().orElse(0.0);
 
-        return new MoodSummaryResponse(weekOffset, weeklyAvgMood, days);
+        return new MoodSummaryResponse(weekOffset, weeklyAvgMood, mostCommonMoods, days);
     }
 
     // Helpers to consider edge cases
