@@ -10,18 +10,34 @@ import { Navbar01 as Navbar } from "~/components/ui/shadcn-io/navbar-01";
 import "~/styles/dashboard.css";
 import {
   Card,
+  CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
 } from "~/components/ui/card";
 import React from "react";
+import { ReviewChart } from "~/components/reviewChart";
+import { CommonMoodsCard } from "~/components/commonMoods";
+import { apiFetch } from "~/lib/apiClient";
+import { useQuery } from "@tanstack/react-query";
 
+function getMoodSummary() {
+  const result = useQuery({
+    queryKey: ["mood-summary"],
+    queryFn: fetchMoodSummaryData,
+  });
+}
 export default function DashboardPage() {
+  const fetchMoodSummaryData = async () => {
+    const response = await apiFetch("http://localhost:8080/mood-summary");
+  };
+
   return (
     <>
       <Navbar />
       <main className="p-8">
-        {/*<Button
+        <TestApiCall />
+        <Button
           onClick={async () => {
             console.log("test");
             await signOut();
@@ -29,7 +45,11 @@ export default function DashboardPage() {
           }}
         >
           Log Out
-        </Button>*/}
+        </Button>
+
+        <ReviewChart />
+
+        <MoodEntryForm />
 
         <div className="dashboard-widgets-container gap-x-8 gap-y-6 md:p-12">
           <Card className="checkin-container">
@@ -57,7 +77,11 @@ export default function DashboardPage() {
           <Card className="review-container">
             <CardHeader>
               <CardTitle>Review</CardTitle>
+              <CardDescription>Your moods the last 7 days</CardDescription>
             </CardHeader>
+            <CardContent>
+              <CommonMoodsCard />
+            </CardContent>
           </Card>
           {/*<MoodEntryForm />*/}
         </div>
