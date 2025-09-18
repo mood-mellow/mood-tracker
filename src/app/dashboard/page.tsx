@@ -21,12 +21,6 @@ import { CommonMoodsCard } from "~/components/commonMoods";
 import { apiFetch } from "~/lib/apiClient";
 import { useQuery } from "@tanstack/react-query";
 
-function getMoodSummary() {
-  const result = useQuery({
-    queryKey: ["mood-summary"],
-    queryFn: fetchMoodSummaryData,
-  });
-}
 export default function DashboardPage() {
   const fetchMoodSummaryData = async () => {
     const response = await apiFetch("http://localhost:8080/mood-summary");

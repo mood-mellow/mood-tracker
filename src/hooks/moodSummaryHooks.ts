@@ -2,14 +2,20 @@ import { useQuery } from "@tanstack/react-query";
 import { apiFetch } from "~/lib/apiClient";
 
 export interface MoodSummary {
-  days: [];
-  mostCommonMoods: [];
   week: number;
   weeklyAvgMood: number;
+  mostCommonMoods: Array<Record<string, number>>;
+  days: DayEntry[];
 }
 
-const fetchMoodSummaryData = async () => {
-  return await apiFetch("http://localhost:8080/mood-summary");
+export interface DayEntry {
+  date: string; // ISO date string
+  avgMood: number;
+  activityCounts: Record<string, number>;
+}
+
+const fetchMoodSummaryData = async (): Promise<MoodSummary> => {
+  return await apiFetch<MoodSummary>("http://localhost:8080/mood-summary");
 };
 
 export const useMoodSummary = () => {
