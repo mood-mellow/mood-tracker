@@ -52,6 +52,7 @@ public class MoodSummaryService {
         List<MoodSummaryResponse.DaySummary> days = new ArrayList<>();
         List<Integer> allScores = new ArrayList<>();
         HashMap<String, Integer> moodCounts = new HashMap<>();
+        Map<String, Integer> activityCounts = new HashMap<>();
 
         for (LocalDate d = startDate; !d.isAfter(endDate); d = d.plusDays(1)) {
             List<MoodEntry> dayEntries = byDate.getOrDefault(d, Collections.emptyList());
@@ -79,7 +80,6 @@ public class MoodSummaryService {
                     : dayScores.stream().mapToInt(Integer::intValue).average().orElse(0.0);
 
             // Activity counts
-            Map<String, Integer> activityCounts = new HashMap<>();
             for (MoodEntry me : dayEntries) {
                 List<ActivityTag> tags = me.getActivityTags();
                 if (tags == null)
@@ -98,6 +98,13 @@ public class MoodSummaryService {
                     activityCounts));
         }
 
+        List<Map.Entry<String, Integer>> mostCommonActivities = new ArrayList<>(activityCounts.entrySet());
+        mostCommonActivities.sort(Map.Entry.comparingByValue()); // asc order
+        // keep only three most common moods
+        while (mostCommonActivities.size() > 3) {
+            mostCommonActivities.removeFirst();
+        }
+
         List<Map.Entry<String, Integer>> mostCommonMoods = new ArrayList<>(moodCounts.entrySet());
         mostCommonMoods.sort(Map.Entry.comparingByValue()); // asc order
         // keep only three most common moods
@@ -108,7 +115,7 @@ public class MoodSummaryService {
         double weeklyAvgMood = allScores.isEmpty() ? 0.0
                 : allScores.stream().mapToInt(Integer::intValue).average().orElse(0.0);
 
-        return new MoodSummaryResponse(weekOffset, weeklyAvgMood, mostCommonMoods, days);
+        return new MoodSummaryResponse(weekOffset, weeklyAvgMood, mostCommonMoods, mostCommonActivities, days);
     }
 
     // Helpers to consider edge cases
