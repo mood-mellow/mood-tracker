@@ -5,6 +5,7 @@ export interface MoodSummary {
   week: number;
   weeklyAvgMood: number;
   mostCommonMoods: Array<Record<string, number>>;
+  mostCommonActivities: Array<Record<string, number>>;
   days: DayEntry[];
 }
 
