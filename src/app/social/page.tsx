@@ -5,11 +5,24 @@ import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";
 import { Button } from "~/components/ui/button";
 import { Input } from "~/components/ui/input"; // import your input component
 import { getCurrentUser } from "aws-amplify/auth";
-import { useFriends } from "~/hooks/friendHooks";
+import {
+  useCreateFriendRequestMutation,
+  useFriends,
+} from "~/hooks/friendHooks";
+import { Navbar01 } from "~/components/ui/shadcn-io/navbar-01";
 
 export default function SocialPage() {
   const [userUid, setUserUid] = useState<string | null>(null);
   const [friendName, setFriendName] = useState("");
+  const createFriendRequest = useCreateFriendRequestMutation();
+  const [isReady, setIsReady] = useState(false);
+
+  // Preload the background image
+  useEffect(() => {
+    const img = new Image();
+    img.src = "/bbblurry.svg";
+    img.onload = () => setIsReady(true);
+  }, []);
 
   useEffect(() => {
     async function fetchUserUid() {
@@ -28,15 +41,32 @@ export default function SocialPage() {
 
   const handleAddFriend = (e: FormEvent) => {
     e.preventDefault();
-    if (!friendName.trim()) return;
-    // TODO: Call your backend to send a friend request
+    if (!friendName.trim() || !userUid) return;
+    createFriendRequest.mutate({
+      senderId: userUid,
+      receiverId: friendName,
+    });
     console.log("Adding friend:", friendName);
     setFriendName(""); // clear input
   };
 
+  // Until ready and UID fetched, show a loader or skeleton
+  if (!isReady || (userUid === null && !error)) {
+    return (
+      <>
+        <Navbar01 />
+        <div className="bg-background flex min-h-screen items-center justify-center">
+          <p className="text-muted-foreground animate-pulse">Loading…</p>
+        </div>
+      </>
+    );
+  }
+
   return (
     <main
-      className="min-h-screen bg-cover bg-center bg-no-repeat p-4 md:p-8"
+      className={`min-h-screen bg-cover bg-center bg-no-repeat p-4 transition-opacity duration-700 md:p-8 ${
+        isReady ? "opacity-100" : "opacity-0"
+      }`}
       style={{ backgroundImage: "url(/bbblurry.svg)" }}
     >
       <span className="text-muted-foreground mb-4 block text-sm">
