@@ -1,5 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { apiFetch } from "~/lib/apiClient";
+import { getCurrentUser } from "aws-amplify/auth";
 
 interface Friend {
   id: string;
@@ -7,10 +8,12 @@ interface Friend {
   friendName: string;
 }
 
-interface FriendRequest {
+export interface FriendRequest {
   id: string;
   senderId: string;
   receiverId: string;
+  senderName: string;
+  receiverName: string;
   status: string;
 }
 
@@ -26,11 +29,7 @@ const fetchFriends = async (userId: string): Promise<Friend[]> => {
 export const useFriends = (userId: string) => {
   return useQuery<Friend[], Error>({
     queryKey: ["friends", userId],
-    queryFn: ({ queryKey }) => {
-      const [, id] = queryKey; // queryKey = ["friends", userId]
-      return fetchFriends(id as string);
-    },
-    enabled: !!userId,
+    queryFn: () => fetchFriends(userId)
   });
 };
 
@@ -38,10 +37,9 @@ const createFriendRequest = async (
   body: CreateFriendRequestBody,
 ): Promise<FriendRequest> => {
   return await apiFetch<FriendRequest>(
-    `http://localhost:8080/friends/request`,
+    `http://localhost:8080/friends/request?senderId=${body.senderId}&receiverId=${body.receiverId}`,
     {
       method: "POST",
-      body: JSON.stringify(body),
     },
   );
 };
@@ -53,7 +51,7 @@ export const useCreateFriendRequestMutation = () => {
     mutationFn: createFriendRequest,
     onSuccess: async () => {
       await queryClient.invalidateQueries({
-        queryKey: ["create-friend-request"],
+        queryKey: ["friend-requests"],
       });
     },
   });
