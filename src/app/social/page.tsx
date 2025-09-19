@@ -6,8 +6,11 @@ import { Button } from "~/components/ui/button";
 import { Input } from "~/components/ui/input"; // import your input component
 import { getCurrentUser } from "aws-amplify/auth";
 import {
+  type FriendRequest,
+  useAcceptFriendRequestMutation,
   useCreateFriendRequestMutation,
   useFriends,
+  useGetPendingFriendRequests,
 } from "~/hooks/friendHooks";
 import { Navbar01 } from "~/components/ui/shadcn-io/navbar-01";
 
@@ -16,6 +19,7 @@ export default function SocialPage() {
   const [friendName, setFriendName] = useState("");
   const createFriendRequest = useCreateFriendRequestMutation();
   const [isReady, setIsReady] = useState(false);
+  const acceptFriendRequest = useAcceptFriendRequestMutation();
 
   // Preload the background image
   useEffect(() => {
@@ -34,10 +38,20 @@ export default function SocialPage() {
         setUserUid(null);
       }
     }
+
     fetchUserUid();
   }, []);
 
-  const { data: friends, isLoading, error } = useFriends(userUid ?? "");
+  const {
+    data: friends,
+    isLoading: isLoadingFriends,
+    error: friendsError,
+  } = useFriends(userUid ?? "");
+  const {
+    data: friendRequests,
+    isLoading: isLoadingRequests,
+    error: requestErrors,
+  } = useGetPendingFriendRequests();
 
   const handleAddFriend = (e: FormEvent) => {
     e.preventDefault();
@@ -51,7 +65,7 @@ export default function SocialPage() {
   };
 
   // Until ready and UID fetched, show a loader or skeleton
-  if (!isReady || (userUid === null && !error)) {
+  if (!isReady || (userUid === null && !friendsError)) {
     return (
       <>
         <Navbar01 />
@@ -91,14 +105,26 @@ export default function SocialPage() {
               <Button type="submit">Add Friend</Button>
             </form>
 
-            {isLoading && (
+            {isLoadingFriends && (
               <p className="text-muted-foreground text-sm">
                 Loading friends...
               </p>
             )}
-            {error && <p className="text-sm">Start adding friends!</p>}
+            {friendsError && <p className="text-sm">Start adding friends!</p>}
 
             <ul className="flex flex-col gap-2">
+              {friendRequests?.map((friendRequest: FriendRequest) => (
+                <li key={friendRequest.id}>
+                  {friendRequest.senderName} PENDING REQ
+                  <Button
+                    onClick={() =>
+                      acceptFriendRequest.mutate(friendRequest.id)
+                    }
+                  >
+                    Accept
+                  </Button>
+                </li>
+              ))}
               {friends?.map((friend) => (
                 <li key={friend.id} className="bg-muted rounded-full p-4">
                   {friend.friendName}
