@@ -23,22 +23,32 @@ public class MoodSummaryController {
 	// week 0 will represent last 7 days, any increments represent preceding 7 days
 	@GetMapping
     public MoodSummaryResponse getWeeklySummary(
-        @RequestParam(defaultValue = "0") int week,
+        @RequestParam(defaultValue = "0") int offSet,
         Authentication authentication
 	) {
 		String userId = ((Jwt) authentication.getPrincipal()).getClaimAsString("sub");
-		return moodSummaryService.getWeeklySummary(userId, week);
+		return moodSummaryService.getWeeklySummary(userId, offSet);
 	}
+
+    @GetMapping
+    public MoodSummaryResponse getMonthlySummary(
+            @RequestParam(defaultValue = "0") int offSet,
+            Authentication authentication
+    ) {
+        String userId = ((Jwt) authentication.getPrincipal()).getClaimAsString("sub");
+        return moodSummaryService.getMonthlySummary(userId, offSet);
+    }
 	
 	@GetMapping("/mood-summary/range")
     public MoodSummaryResponse getSummaryForRange(
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate start,
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate end,
-            @RequestParam(defaultValue = "0") int week,
+            @RequestParam(defaultValue = "custom") String periodType,
+            @RequestParam(defaultValue = "0") int offSet,
             Authentication authentication) {
 
         String userId = ((Jwt) authentication.getPrincipal()).getClaimAsString("sub");
 
-        return moodSummaryService.getSummaryForRange(userId, start, end, week);
+        return moodSummaryService.getSummaryForRange(userId, start, end, periodType, offSet);
     }
 }
