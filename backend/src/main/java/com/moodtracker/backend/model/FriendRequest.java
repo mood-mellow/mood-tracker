@@ -12,7 +12,7 @@ import lombok.*;
 @Builder
 public class FriendRequest {
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.UUID)
     private String id;
 
     // The user sending the request
