@@ -4,18 +4,21 @@ import java.util.List;
 import java.util.Map;
 
 public class MoodSummaryResponse {
-	private int week;
-	private double weeklyAvgMood;
+	private String periodType;
+    private int offSet;
+	private double averageMood;
     private List<DaySummary> days;
 
-    public MoodSummaryResponse(int week, double weeklyAvgMood, List<DaySummary> days) {
-        this.week = week;
-		this.weeklyAvgMood = weeklyAvgMood;
+    public MoodSummaryResponse(String periodType, int offSet, double averageMood, List<DaySummary> days) {
+        this.periodType = periodType;
+        this.offSet = offSet;
+		this.averageMood = averageMood;
 		this.days = days;
     }
 
-	public int getWeek() { return week; }
-	public double getWeeklyAvgMood() { return weeklyAvgMood; }
+	public String getPeriodType() { return periodType; }
+    public int getOffSet() { return offSet; }
+	public double getAverageMood() { return averageMood; }
     public List<DaySummary> getDays() { return days; }
 
     public static class DaySummary {

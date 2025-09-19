@@ -30,13 +30,30 @@ public class MoodSummaryService {
         LocalDate endDate = LocalDate.now().minusWeeks(weekOffset);   // inclusive
         LocalDate startDate = endDate.minusDays(6);                    // 7-day window
 
-        return getSummaryForRange(userId, startDate, endDate, weekOffset);
+        return getSummaryForRange(userId, startDate, endDate, "weekly", weekOffset);
+    }
+
+    public MoodSummaryResponse getMonthlySummary(String userId, int monthOffset) {
+        // monthOffset = 0 -> current month, 1 -> previous month, etc.
+        LocalDate now = LocalDate.now().minusMonths(monthOffset);
+
+        // Start at first day of the month
+        LocalDate startDate = now.withDayOfMonth(1);
+        // End at last day of the month
+        LocalDate endDate = now.withDayOfMonth(now.lengthOfMonth());
+
+        return getSummaryForRange(userId, startDate, endDate, "monthly", monthOffset);
     }
 
     /*
      * Same as above but with explicit date range (inclusive).
      */
-    public MoodSummaryResponse getSummaryForRange(String userId, LocalDate startDate, LocalDate endDate, int weekOffset) {
+    public MoodSummaryResponse getSummaryForRange(
+            String userId,
+            LocalDate startDate,
+            LocalDate endDate,
+            String periodType,
+            int offSet) {
         // Convert to DateTime bounds (inclusive and fixes earlier issue)
         LocalDateTime startDateTime = startDate.atStartOfDay();
         LocalDateTime endDateTime = endDate.atTime(23, 59, 59, 999_999_999);
@@ -87,9 +104,9 @@ public class MoodSummaryService {
             ));
         }
 		
-		double weeklyAvgMood = allScores.isEmpty() ? 0.0 : allScores.stream().mapToInt(Integer::intValue).average().orElse(0.0);
+		double averageMood = allScores.isEmpty() ? 0.0 : allScores.stream().mapToInt(Integer::intValue).average().orElse(0.0);
 
-        return new MoodSummaryResponse(weekOffset, weeklyAvgMood, days);
+        return new MoodSummaryResponse(periodType, offSet, averageMood, days);
     }
 
     // Helpers to consider edge cases
