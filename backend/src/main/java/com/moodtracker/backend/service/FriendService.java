@@ -60,7 +60,7 @@ public class FriendService {
                 .map(req -> {
                     User sender = req.getSender();
                     return new FriendRequestDTO(
-                            req.getId(), sender.getId(), receiver.getId(), sender.getUsername(), receiver.getId(), FriendRequest.Status.PENDING.name());
+                            req.getId(), sender.getId(), receiver.getId(), sender.getUsername(), receiver.getUsername(), FriendRequest.Status.PENDING.name());
                 })
                 .collect(Collectors.toList());
     }
