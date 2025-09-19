@@ -22,22 +22,25 @@ interface CreateFriendRequestBody {
   receiverId: string;
 }
 
-const fetchFriends = async (userId: string): Promise<Friend[]> => {
+const fetchFriends = async (): Promise<Friend[]> => {
+  const { userId } = await getCurrentUser();
   return await apiFetch<Friend[]>(`http://localhost:8080/friends/${userId}`);
 };
 
-export const useFriends = (userId: string) => {
+export const useFriends = () => {
   return useQuery<Friend[], Error>({
-    queryKey: ["friends", userId],
-    queryFn: () => fetchFriends(userId)
+    queryKey: ["friends"],
+    queryFn: () => fetchFriends(),
   });
 };
 
 const createFriendRequest = async (
-  body: CreateFriendRequestBody,
+  receiverId: string,
 ): Promise<FriendRequest> => {
+  const { userId: senderId } = await getCurrentUser();
+
   return await apiFetch<FriendRequest>(
-    `http://localhost:8080/friends/request?senderId=${body.senderId}&receiverId=${body.receiverId}`,
+    `http://localhost:8080/friends/request?senderId=${senderId}&receiverId=${receiverId}`,
     {
       method: "POST",
     },
@@ -48,7 +51,7 @@ export const useCreateFriendRequestMutation = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: createFriendRequest,
+    mutationFn: (receiverId: string) => createFriendRequest(receiverId),
     onSuccess: async () => {
       await queryClient.invalidateQueries({
         queryKey: ["friend-requests"],
@@ -62,23 +65,20 @@ const fetchPendingFriendRequests = async () => {
   return await apiFetch<FriendRequest[]>(
     `http://localhost:8080/friends/pending-request/${receiverId}`,
   );
-}
+};
 
 export const useGetPendingFriendRequests = () => {
   return useQuery<FriendRequest[], Error>({
     queryKey: ["friend-requests"],
-    queryFn: fetchPendingFriendRequests
+    queryFn: fetchPendingFriendRequests,
   });
 };
 
 const acceptFriendRequest = async (senderId: string) => {
-  return await apiFetch(
-    `http://localhost:8080/friends/accept/${senderId}`,
-    {
-      method: "PUT",
-    }
-  );
-}
+  return await apiFetch(`http://localhost:8080/friends/accept/${senderId}`, {
+    method: "PUT",
+  });
+};
 
 export const useAcceptFriendRequestMutation = () => {
   const queryClient = useQueryClient();
@@ -89,6 +89,6 @@ export const useAcceptFriendRequestMutation = () => {
       await queryClient.invalidateQueries({
         queryKey: ["friends"],
       });
-    }
-  })
-}
+    },
+  });
+};
