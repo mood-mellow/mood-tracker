@@ -34,6 +34,8 @@ public class FriendService {
         return new FriendRequestDTO(saved.getId(),
                 saved.getSender().getId(),
                 saved.getReceiver().getId(),
+                saved.getSender().getUsername(),
+                saved.getReceiver().getUsername(),
                 saved.getStatus().name());
     }
 
@@ -45,6 +47,8 @@ public class FriendService {
         return new FriendRequestDTO(saved.getId(),
                 saved.getSender().getId(),
                 saved.getReceiver().getId(),
+                saved.getSender().getUsername(),
+                saved.getReceiver().getUsername(),
                 saved.getStatus().name());
     }
 

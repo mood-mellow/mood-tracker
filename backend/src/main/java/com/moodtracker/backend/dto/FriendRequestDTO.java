@@ -11,5 +11,7 @@ public class FriendRequestDTO {
     private String id;
     private String senderId;
     private String receiverId;
+    private String senderName;
+    private String receiverName;
     private String status;
 }
