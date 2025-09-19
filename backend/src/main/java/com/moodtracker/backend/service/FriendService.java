@@ -52,6 +52,19 @@ public class FriendService {
                 saved.getStatus().name());
     }
 
+    public List<FriendRequestDTO> getPendingRequests(String receiverId) {
+        User receiver = userRepository.findById(receiverId).orElseThrow();
+        List<FriendRequest> pendingRequests = friendRequestRepository.findByReceiverAndStatus(receiver, FriendRequest.Status.PENDING);
+
+        return pendingRequests.stream()
+                .map(req -> {
+                    User sender = req.getSender();
+                    return new FriendRequestDTO(
+                            req.getId(), sender.getId(), receiver.getId(), sender.getUsername(), receiver.getId(), FriendRequest.Status.PENDING.name());
+                })
+                .collect(Collectors.toList());
+    }
+
     public List<FriendDTO> getFriends(String userId) {
         User user = userRepository.findById(userId).orElseThrow();
 
