@@ -58,3 +58,39 @@ export const useCreateFriendRequestMutation = () => {
     },
   });
 };
+
+const fetchPendingFriendRequests = async () => {
+  const { userId: receiverId } = await getCurrentUser();
+  return await apiFetch<FriendRequest[]>(
+    `http://localhost:8080/friends/pending-request/${receiverId}`,
+  );
+}
+
+export const useGetPendingFriendRequests = () => {
+  return useQuery<FriendRequest[], Error>({
+    queryKey: ["friend-requests"],
+    queryFn: fetchPendingFriendRequests
+  });
+};
+
+const acceptFriendRequest = async (senderId: string) => {
+  return await apiFetch(
+    `http://localhost:8080/friends/accept/${senderId}`,
+    {
+      method: "PUT",
+    }
+  );
+}
+
+export const useAcceptFriendRequestMutation = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: acceptFriendRequest,
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({
+        queryKey: ["friends"],
+      });
+    }
+  })
+}
