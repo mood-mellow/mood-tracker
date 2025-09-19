@@ -1,4 +1,4 @@
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { apiFetch } from "~/lib/apiClient";
 
 interface Friend {
@@ -14,6 +14,11 @@ interface FriendRequest {
   status: string;
 }
 
+interface CreateFriendRequestBody {
+  senderId: string;
+  receiverId: string;
+}
+
 const fetchFriends = async (userId: string): Promise<Friend[]> => {
   return await apiFetch<Friend[]>(`http://localhost:8080/friends/${userId}`);
 };
@@ -26,5 +31,30 @@ export const useFriends = (userId: string) => {
       return fetchFriends(id as string);
     },
     enabled: !!userId,
+  });
+};
+
+const createFriendRequest = async (
+  body: CreateFriendRequestBody,
+): Promise<FriendRequest> => {
+  return await apiFetch<FriendRequest>(
+    `http://localhost:8080/friends/request`,
+    {
+      method: "POST",
+      body: JSON.stringify(body),
+    },
+  );
+};
+
+export const useCreateFriendRequestMutation = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: createFriendRequest,
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({
+        queryKey: ["create-friend-request"],
+      });
+    },
   });
 };
