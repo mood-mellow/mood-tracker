@@ -25,18 +25,6 @@ export default function SocialPage() {
     img.onload = () => setIsReady(true);
   }, []);
 
-  // Until ready and UID fetched, show a loader or skeleton
-  if (!isReady) {
-    return (
-      <>
-        <Navbar01 />
-        <div className="bg-background flex min-h-screen items-center justify-center">
-          <p className="text-muted-foreground animate-pulse">Loading…</p>
-        </div>
-      </>
-    );
-  }
-
   return (
     <>
       <Navbar01 />
@@ -46,10 +34,6 @@ export default function SocialPage() {
         }`}
         style={{ backgroundImage: "url(/bbblurry.svg)" }}
       >
-        <span className="text-muted-foreground mb-4 block text-sm">
-          {/*{userUid ? `Your UID: ${userUid}` : ""}*/}
-        </span>
-
         <div className="mx-auto grid max-w-6xl gap-6 md:grid-cols-[1fr_2fr]">
           {/* Friends Panel */}
           <Card className="flex flex-col">
