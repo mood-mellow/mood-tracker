@@ -9,16 +9,19 @@ import {
 } from "~/hooks/friendHooks";
 import { Navbar01 } from "~/components/ui/shadcn-io/navbar-01";
 import { SearchUsersContainer } from "~/components/searchUsersContainer";
+import { Button } from "~/components/ui/button";
+import { ViewFriendsContainer } from "~/components/viewFriendsContainer";
+
+enum FriendsPanel {
+  Friends,
+  Search,
+}
 
 export default function SocialPage() {
   const [isReady, setIsReady] = useState(false);
-  const acceptFriendRequest = useAcceptFriendRequestMutation();
-  const getFriends = useFriends();
-  const {
-    data: friendRequests,
-    isLoading: isLoadingRequests,
-    error: requestErrors,
-  } = useGetPendingFriendRequests();
+  const [friendsPanel, setFriendsPanel] = useState<FriendsPanel>(
+    FriendsPanel.Friends,
+  );
 
   // Preload the background image
   useEffect(() => {
@@ -26,19 +29,6 @@ export default function SocialPage() {
     img.src = "/bbblurry.svg";
     img.onload = () => setIsReady(true);
   }, []);
-
-  /*
-  const handleAddFriend = (e: FormEvent) => {
-    e.preventDefault();
-    if (!searched.trim() || !userUid) return;
-    createFriendRequest.mutate({
-      senderId: userUid,
-      receiverId: searched,
-    });
-    console.log("Adding friend:", searched);
-    setSearched(""); // clear input
-  };
-*/
 
   // Until ready and UID fetched, show a loader or skeleton
   if (!isReady) {
@@ -66,32 +56,24 @@ export default function SocialPage() {
       <div className="mx-auto grid max-w-6xl gap-6 md:grid-cols-[1fr_2fr]">
         {/* Friends Panel */}
         <Card className="flex flex-col">
-          <CardHeader>
-            <CardTitle>Friends</CardTitle>
+          <CardHeader className="flex items-center justify-between">
+            <CardTitle className="text-lg">Friends</CardTitle>
+            {friendsPanel == FriendsPanel.Friends ? (
+              <Button onClick={() => setFriendsPanel(FriendsPanel.Search)}>
+                Add Friends
+              </Button>
+            ) : (
+              <Button onClick={() => setFriendsPanel(FriendsPanel.Friends)}>
+                Back
+              </Button>
+            )}
           </CardHeader>
           <CardContent className="flex flex-col gap-4">
-            <SearchUsersContainer />
-            {/*
-            <form onSubmit={handleSearchOtherUsers} className="flex gap-2">
-              <Input
-                type="text"
-                placeholder="Enter friend's name or ID"
-                value={searched}
-                onChange={(e) => setSearched(e.target.value)}
-              />
-              <Button type="submit">Add Friend</Button>
-            </form>
-
-            {getFriends.isLoading && (
-              <p className="text-muted-foreground text-sm">
-                Loading friends...
-              </p>
+            {friendsPanel == FriendsPanel.Friends ? (
+              <ViewFriendsContainer />
+            ) : (
+              <SearchUsersContainer />
             )}
-            {getFriends.error && (
-              <p className="text-sm">Start adding friends!</p>
-            )}
-
-*/}
             {/*
             <ul className="flex flex-col gap-2">
               {getOtherUsers.data?.map((user) => (
