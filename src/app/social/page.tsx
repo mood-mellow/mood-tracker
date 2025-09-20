@@ -1,28 +1,18 @@
 "use client";
 
-import { useEffect, useState, type FormEvent, useRef } from "react";
+import { useEffect, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";
-import { Button } from "~/components/ui/button";
-import { Input } from "~/components/ui/input"; // import your input component
 import {
   useAcceptFriendRequestMutation,
-  useCreateFriendRequestMutation,
   useFriends,
   useGetPendingFriendRequests,
 } from "~/hooks/friendHooks";
 import { Navbar01 } from "~/components/ui/shadcn-io/navbar-01";
-import { useGetOtherUsers, type Stranger } from "~/hooks/searchUserHooks";
-import { XIcon, SearchIcon } from "lucide-react";
+import { SearchUsersContainer } from "~/components/searchUsersContainer";
 
 export default function SocialPage() {
-  const searchRef = useRef<HTMLInputElement>(null);
   const [isReady, setIsReady] = useState(false);
-  const [requestedStrangerIds, setRequestedStrangerIds] = useState<string[]>(
-    [],
-  );
-  const createFriendRequest = useCreateFriendRequestMutation();
   const acceptFriendRequest = useAcceptFriendRequestMutation();
-  const getOtherUsers = useGetOtherUsers();
   const getFriends = useFriends();
   const {
     data: friendRequests,
@@ -36,77 +26,6 @@ export default function SocialPage() {
     img.src = "/bbblurry.svg";
     img.onload = () => setIsReady(true);
   }, []);
-
-  function SearchUsersContainer() {
-    return (
-      <>
-        <form onSubmit={handleSearchOtherUsers} className="flex gap-2">
-          <div className="relative w-full max-w-sm">
-            <Input
-              type="text"
-              placeholder="Find your peers..."
-              className="w-full pr-9"
-              ref={searchRef}
-            />
-            <Button
-              type="button"
-              variant="ghost"
-              size="icon"
-              className="absolute top-1/2 right-1 h-7 w-7 -translate-y-1/2 text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-100"
-              onClick={() => {
-                if (searchRef.current) searchRef.current.value = "";
-                setRequestedStrangerIds([]);
-              }}
-            >
-              <XIcon className="h-4 w-4" />
-              <span className="sr-only">Clear</span>
-            </Button>
-          </div>
-
-          <Button type="submit">
-            <SearchIcon />
-          </Button>
-        </form>
-        <ul className="flex flex-col gap-2">
-          {getOtherUsers.data?.map((user) => (
-            <li key={user.userId} className="flex items-center gap-4">
-              {user.username}
-              {!requestedStrangerIds.includes(user.userId) ? (
-                <Button onClick={() => handleSendFriendRequest(user.userId)}>
-                  Send Friend Request
-                </Button>
-              ) : (
-                <Button disabled>Sent</Button>
-              )}
-            </li>
-          ))}
-        </ul>
-      </>
-    );
-  }
-
-  const handleSearchOtherUsers = (e: FormEvent) => {
-    e.preventDefault();
-    if (searchRef.current) getOtherUsers.mutate(searchRef.current.value);
-
-    const userIds: string[] = [];
-    getOtherUsers.data?.map((user) => {
-      userIds.push(user.userId);
-    });
-    // setSearched("");
-    setRequestedStrangerIds(userIds);
-  };
-
-  const handleSendFriendRequest = (friendUserId: string) => {
-    setRequestedStrangerIds((prev) => [...prev, friendUserId]);
-    createFriendRequest.mutate(friendUserId, {
-      onError: () => {
-        setRequestedStrangerIds((prev) =>
-          prev.filter((id) => id != friendUserId),
-        );
-      },
-    });
-  };
 
   /*
   const handleAddFriend = (e: FormEvent) => {
