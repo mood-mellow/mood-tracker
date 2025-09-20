@@ -1,12 +1,10 @@
 "use client";
 
-import { useEffect, useState, type FormEvent } from "react";
+import { useEffect, useState, type FormEvent, useRef } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";
 import { Button } from "~/components/ui/button";
 import { Input } from "~/components/ui/input"; // import your input component
-import { getCurrentUser } from "aws-amplify/auth";
 import {
-  type FriendRequest,
   useAcceptFriendRequestMutation,
   useCreateFriendRequestMutation,
   useFriends,
@@ -14,16 +12,15 @@ import {
 } from "~/hooks/friendHooks";
 import { Navbar01 } from "~/components/ui/shadcn-io/navbar-01";
 import { useGetOtherUsers, type Stranger } from "~/hooks/searchUserHooks";
-import type { UseMutationResult } from "@tanstack/react-query";
+import { XIcon, SearchIcon } from "lucide-react";
 
 export default function SocialPage() {
-  const [searched, setSearched] = useState("");
+  const searchRef = useRef<HTMLInputElement>(null);
   const [isReady, setIsReady] = useState(false);
   const [requestedStrangerIds, setRequestedStrangerIds] = useState<string[]>(
     [],
   );
   const createFriendRequest = useCreateFriendRequestMutation();
-  const [isReady, setIsReady] = useState(false);
   const acceptFriendRequest = useAcceptFriendRequestMutation();
   const getOtherUsers = useGetOtherUsers();
   const getFriends = useFriends();
@@ -43,27 +40,28 @@ export default function SocialPage() {
   function SearchUsersContainer() {
     return (
       <>
-        {/* Add Friend Form */}
-        <div className="relative w-full max-w-sm">
-          <Input type="text" placeholder="Search..." className="w-full pr-9" />
-          <Button
-            type="button"
-            variant="ghost"
-            size="icon"
-            className="absolute top-1/2 right-1 h-7 w-7 -translate-y-1/2 text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-100"
-            // onClick={() => {}}
-          >
-            <XIcon className="h-4 w-4" />
-            <span className="sr-only">Clear</span>
-          </Button>
-        </div>
         <form onSubmit={handleSearchOtherUsers} className="flex gap-2">
-          <Input
-            type="text"
-            placeholder="Enter friend's name or ID"
-            value={searched}
-            onChange={(e) => setSearched(e.target.value)}
-          />
+          <div className="relative w-full max-w-sm">
+            <Input
+              type="text"
+              placeholder="Find your peers..."
+              className="w-full pr-9"
+              ref={searchRef}
+            />
+            <Button
+              type="button"
+              variant="ghost"
+              size="icon"
+              className="absolute top-1/2 right-1 h-7 w-7 -translate-y-1/2 text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-100"
+              onClick={() => {
+                if (searchRef.current) searchRef.current.value = "";
+                setRequestedStrangerIds([]);
+              }}
+            >
+              <XIcon className="h-4 w-4" />
+              <span className="sr-only">Clear</span>
+            </Button>
+          </div>
 
           <Button type="submit">
             <SearchIcon />
@@ -89,7 +87,7 @@ export default function SocialPage() {
 
   const handleSearchOtherUsers = (e: FormEvent) => {
     e.preventDefault();
-    getOtherUsers.mutate(searched);
+    if (searchRef.current) getOtherUsers.mutate(searchRef.current.value);
 
     const userIds: string[] = [];
     getOtherUsers.data?.map((user) => {
@@ -174,18 +172,23 @@ export default function SocialPage() {
               <p className="text-sm">Start adding friends!</p>
             )}
 
+*/}
+            {/*
             <ul className="flex flex-col gap-2">
               {getOtherUsers.data?.map((user) => (
-                <li key={user.userId}>
+                <li key={user.userId} className="flex items-center gap-4">
                   {user.username}
-                  <Button
-                    onClick={() => createFriendRequest.mutate(user.userId)}
-                  >
-                    Accept
-                  </Button>
+                  {!requestedStrangerIds.includes(user.userId) ? (
+                    <Button
+                      onClick={() => handleSendFriendRequest(user.userId)}
+                    >
+                      Send Friend Request
+                    </Button>
+                  ) : (
+                    <Button disabled>Sent</Button>
+                  )}
                 </li>
               ))}
-              {/*
               {friendRequests?.map((friendRequest: FriendRequest) => (
                 <li key={friendRequest.id}>
                   {friendRequest.senderName} PENDING REQ
@@ -203,8 +206,8 @@ export default function SocialPage() {
                   {friend.friendName}
                 </li>
               ))}
-*/}
             </ul>
+*/}
           </CardContent>
         </Card>
 
