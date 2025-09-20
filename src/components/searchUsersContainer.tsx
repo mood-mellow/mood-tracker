@@ -4,6 +4,7 @@ import { useCreateFriendRequestMutation } from "~/hooks/friendHooks";
 import { Input } from "~/components/ui/input";
 import { Button } from "~/components/ui/button";
 import { SearchIcon, XIcon } from "lucide-react";
+import { Avatar } from "./ui/gravatar";
 
 export function SearchUsersContainer() {
   const [searched, setSearched] = useState("");
@@ -69,7 +70,10 @@ export function SearchUsersContainer() {
       <ul className="flex flex-col gap-2">
         {getOtherUsers.data?.map((user) => (
           <li key={user.userId} className="flex items-center gap-4">
-            {user.username}
+            <span className="flex items-center gap-x-4">
+              <Avatar fallback={user.username.substring(0, 2).toUpperCase()} />
+              {user.username}
+            </span>
             {!requestedStrangerIds.includes(user.userId) ? (
               <Button onClick={() => handleSendFriendRequest(user.userId)}>
                 Send Friend Request
