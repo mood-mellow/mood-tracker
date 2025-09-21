@@ -16,6 +16,7 @@ import {
 } from "~/components/ui/popover";
 import { cn } from "~/lib/utils";
 import { Avatar, AvatarFallback, AvatarImage } from "~/components/ui/avatar";
+import Link from "next/link";
 
 // Simple logo component for the navbar
 const Logo = (props: React.SVGAttributes<SVGElement>) => {
@@ -96,18 +97,18 @@ export interface Navbar01Props extends React.HTMLAttributes<HTMLElement> {
   navigationLinks?: Navbar01NavLink[];
   signInText?: string;
   signInHref?: string;
-  ctaText?: string;
-  ctaHref?: string;
+  profileText?: string;
+  profileHref?: string;
   onSignInClick?: () => void;
   onCtaClick?: () => void;
 }
 
 // Default navigation links
 const defaultNavigationLinks: Navbar01NavLink[] = [
-  { href: "#", label: "Dashboard", active: true },
-  { href: "#features", label: "Insights" },
-  { href: "#pricing", label: "History" },
-  { href: "#about", label: "Social" },
+  { href: "/dashboard", label: "Dashboard", active: true },
+  { href: "/insights", label: "Insights" },
+  { href: "/history", label: "History" },
+  { href: "/social", label: "Social" },
 ];
 
 export const Navbar01 = React.forwardRef<HTMLElement, Navbar01Props>(
@@ -119,8 +120,8 @@ export const Navbar01 = React.forwardRef<HTMLElement, Navbar01Props>(
       navigationLinks = defaultNavigationLinks,
       signInText = "Add mood",
       signInHref = "#signin",
-      ctaText = "Hey, Bob",
-      ctaHref = "#get-started",
+      profileText = "Hey, Bob",
+      profileHref = "#get-started",
       onSignInClick,
       onCtaClick,
       ...props
@@ -191,8 +192,8 @@ export const Navbar01 = React.forwardRef<HTMLElement, Navbar01Props>(
                     <NavigationMenuList className="flex-col items-start gap-1">
                       {navigationLinks.map((link, index) => (
                         <NavigationMenuItem key={index} className="w-full">
-                          <button
-                            onClick={(e) => e.preventDefault()}
+                          <Link
+                            href={link.href}
                             className={cn(
                               "hover:bg-accent hover:text-accent-foreground flex w-full cursor-pointer items-center rounded-md px-3 py-2 text-sm font-medium no-underline transition-colors",
                               link.active
@@ -201,7 +202,7 @@ export const Navbar01 = React.forwardRef<HTMLElement, Navbar01Props>(
                             )}
                           >
                             {link.label}
-                          </button>
+                          </Link>
                         </NavigationMenuItem>
                       ))}
                     </NavigationMenuList>
@@ -227,8 +228,8 @@ export const Navbar01 = React.forwardRef<HTMLElement, Navbar01Props>(
                 <NavigationMenuList className="gap-1">
                   {navigationLinks.map((link, index) => (
                     <NavigationMenuItem key={index}>
-                      <button
-                        onClick={(e) => e.preventDefault()}
+                      <Link
+                        href={link.href}
                         className={cn(
                           "group hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground inline-flex h-9 w-max cursor-pointer items-center justify-center rounded-md px-4 py-2 text-sm font-medium no-underline transition-colors focus:outline-none disabled:pointer-events-none disabled:opacity-50",
                           link.active
@@ -237,7 +238,7 @@ export const Navbar01 = React.forwardRef<HTMLElement, Navbar01Props>(
                         )}
                       >
                         {link.label}
-                      </button>
+                      </Link>
                     </NavigationMenuItem>
                   ))}
                 </NavigationMenuList>
@@ -264,7 +265,7 @@ export const Navbar01 = React.forwardRef<HTMLElement, Navbar01Props>(
                 if (onCtaClick) onCtaClick();
               }}
             >
-              {ctaText}
+              {profileText}
               <Avatar className="m-0 h-7 w-7">
                 <AvatarImage src="https://github.com/shadcn.png" />
                 <AvatarFallback>CN</AvatarFallback>
