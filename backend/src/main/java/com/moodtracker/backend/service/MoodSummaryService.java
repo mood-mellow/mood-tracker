@@ -129,7 +129,7 @@ public class MoodSummaryService {
             case "furious":
             case "annoyed":
             case "terrible":
-			      case "angry":
+			case "angry":
             case "frustrated":
             case "mad":
                 return 1;
