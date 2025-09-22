@@ -20,17 +20,37 @@ import { ReviewChart } from "~/components/reviewChart";
 import { CommonMoodsCard } from "~/components/commonMoods";
 import { apiFetch } from "~/lib/apiClient";
 import { useQuery } from "@tanstack/react-query";
+import { Calendar } from "~/components/ui/calendar";
+import { CalendarWithMood } from "~/components/calendarWithMood";
+import { CommonActivitiesCard } from "~/components/commonActivities";
+import Link from "next/link";
+import { useFriends } from "~/hooks/friendHooks";
 
 export default function DashboardPage() {
   const fetchMoodSummaryData = async () => {
     const response = await apiFetch("http://localhost:8080/mood-summary");
   };
 
+  // const friends = useFriends()
+  const averageMoods = [
+    { date: "2025-09-01", mood: 4 },
+    { date: "2025-09-02", mood: 5 },
+    { date: "2025-09-03", mood: 2 },
+    // ...
+  ];
+
+  // Convert to Record<string, number>
+  const moodsByDate = Object.fromEntries(
+    averageMoods.map((m) => [m.date, m.mood]),
+  );
+
   return (
     <>
       <Navbar />
+      <Link href="/social">test</Link>
       <main className="p-8">
         <TestApiCall />
+        {/*
         <Button
           onClick={async () => {
             console.log("test");
@@ -39,9 +59,8 @@ export default function DashboardPage() {
           }}
         >
           Log Out
-        </Button>
-
-        <ReviewChart />
+        </Button> */}
+        {/*<CalendarWithMood />*/}
 
         <MoodEntryForm />
 
@@ -73,11 +92,12 @@ export default function DashboardPage() {
               <CardTitle>Review</CardTitle>
               <CardDescription>Your moods the last 7 days</CardDescription>
             </CardHeader>
-            <CardContent>
+            <CardContent className="flex gap-x-8">
+              <ReviewChart />
               <CommonMoodsCard />
+              <CommonActivitiesCard />
             </CardContent>
           </Card>
-          {/*<MoodEntryForm />*/}
         </div>
       </main>
     </>
