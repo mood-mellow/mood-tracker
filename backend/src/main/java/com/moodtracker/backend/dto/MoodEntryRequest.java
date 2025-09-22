@@ -4,20 +4,20 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 public class MoodEntryRequest {
-	private Long userId;
+	private String userId;
 	private String mood;
 	private String color;
 	private String emoji;
 	private String journalEntry;
-	private List<Long> activityTagIds;
+	private List<String> activityTagIds;
 	private LocalDateTime timestamp;
 
 	// Getters and setters
-	public Long getUserId() {
+	public String getUserId() {
 		return userId;
 	}
 
-	public void setUserId(Long userId) {
+	public void setUserId(String userId) {
 		this.userId = userId;
 	}
 
@@ -53,11 +53,11 @@ public class MoodEntryRequest {
 		this.journalEntry = journalEntry;
 	}
 
-	public List<Long> getActivityTagIds() {
+	public List<String> getActivityTagIds() {
 		return activityTagIds;
 	}
 
-	public void setActivityTagIds(List<Long> activityTagIds) {
+	public void setActivityTagIds(List<String> activityTagIds) {
 		this.activityTagIds = activityTagIds;
 	}
 

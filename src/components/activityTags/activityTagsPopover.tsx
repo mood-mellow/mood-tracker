@@ -19,7 +19,19 @@ import {
   useDeleteActivityTag,
 } from "~/hooks/activityTagHooks";
 
-export function ActivityTagsPopover() {
+interface ActivityTagsPopoverProps {
+  selectedTags?: ActivityTag[];
+  onTagSelect?: (tag: ActivityTag) => void;
+  onTagRemove?: (tagId: string) => void;
+  showManageButton?: boolean;
+}
+
+export function ActivityTagsPopover({
+  selectedTags = [],
+  onTagSelect,
+  onTagRemove,
+  showManageButton = true,
+}: ActivityTagsPopoverProps) {
   const { data: activityTags = [], isLoading, error } = useActivityTags();
   const createActivityMutation = useCreateActivityTag();
   const updateActivityMutation = useUpdateActivityTag();
@@ -105,7 +117,10 @@ export function ActivityTagsPopover() {
   return (
     <Popover>
       <PopoverTrigger asChild>
-        <Button variant="outline">Open popover</Button>
+        <Button variant="outline" size="sm">
+          <Plus />
+          Select Activities
+        </Button>
       </PopoverTrigger>
       <PopoverContent className="w-80">
         <div className="grid gap-4">
@@ -248,6 +263,7 @@ export function ActivityTagsPopover() {
                           <Button
                             variant="ghost"
                             className="flex flex-1 items-center justify-start gap-3 px-3 py-2 text-sm"
+                            onClick={() => onTagSelect?.(activity)}
                           >
                             <div
                               className={`h-3 w-3 rounded-full ${getActivityColor(index)}`}

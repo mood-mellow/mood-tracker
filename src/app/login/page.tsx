@@ -6,10 +6,12 @@ import { ConfirmRegisterForm } from "~/components/confirmRegisterForm";
 
 export default function AuthPage() {
   return (
-    <main className="flex flex-col gap-10">
+    <main
+      className="min-h-screen bg-cover bg-center bg-no-repeat"
+      style={{ backgroundImage: "url(/bbblurry.svg)" }}
+    >
       <RegisterForm />
       <LoginForm />
-      <ConfirmRegisterForm />
     </main>
   );
 }

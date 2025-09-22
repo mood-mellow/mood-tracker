@@ -16,8 +16,11 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.moodtracker.backend.dto.MoodEntryRequest;
+import com.moodtracker.backend.model.ActivityTag;
 import com.moodtracker.backend.model.MoodEntry;
 import com.moodtracker.backend.model.User;
+import com.moodtracker.backend.repository.ActivityTagRepository;
 import com.moodtracker.backend.repository.MoodEntryRepository;
 import com.moodtracker.backend.repository.UserRepository;
 
@@ -27,25 +30,33 @@ public class MoodEntryController {
 
 	private final MoodEntryRepository moodEntryRepository;
 	private final UserRepository userRepository;
+	private final ActivityTagRepository activityTagRepository;
 
-	public MoodEntryController(MoodEntryRepository moodEntryRepository, UserRepository userRepository) {
+	public MoodEntryController(MoodEntryRepository moodEntryRepository, UserRepository userRepository,
+			ActivityTagRepository activityTagRepository) {
 		this.moodEntryRepository = moodEntryRepository;
 		this.userRepository = userRepository;
+		this.activityTagRepository = activityTagRepository;
 	}
 
 	@PostMapping
-	public ResponseEntity<MoodEntry> createMoodEntry(@RequestBody MoodEntry moodEntry,
+	public ResponseEntity<MoodEntry> createMoodEntry(@RequestBody MoodEntryRequest dto,
 			Authentication authentication) {
 		// Extract userId from JWT Authentication and Cognito claim
 		Jwt jwt = (Jwt) authentication.getPrincipal();
 		String userId = jwt.getClaimAsString("sub");
-
-		// Find the User entity
 		User user = userRepository.findById(userId)
-				.orElseThrow(() -> new RuntimeException("User not found"));
+				.orElseThrow(() -> new RuntimeException("User not found."));
 
-		// Attach user + timestamp
+		List<ActivityTag> tags = activityTagRepository.findAllById(dto.getActivityTagIds());
+
+		MoodEntry moodEntry = new MoodEntry();
+		moodEntry.setMood(dto.getMood());
+		moodEntry.setEmoji(dto.getEmoji());
+		moodEntry.setColor(dto.getColor());
+		moodEntry.setJournalEntry(dto.getJournalEntry());
 		moodEntry.setUser(user);
+		moodEntry.setActivityTags(tags);
 		moodEntry.setTimestamp(LocalDateTime.now());
 
 		MoodEntry saved = moodEntryRepository.save(moodEntry);
@@ -57,8 +68,7 @@ public class MoodEntryController {
 			Authentication authentication,
 			@RequestParam(required = false) String start,
 			@RequestParam(required = false) String end) {
-		// Extract userId from JWT Authentication and Cognito claim (consistent with
-		// other methods)
+
 		Jwt jwt = (Jwt) authentication.getPrincipal();
 		String userId = jwt.getClaimAsString("sub");
 
