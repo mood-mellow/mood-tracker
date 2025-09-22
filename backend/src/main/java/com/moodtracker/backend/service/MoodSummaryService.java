@@ -120,38 +120,59 @@ public class MoodSummaryService {
     }
 
     /**
-     * Map mood strings to a 1-5 score.
+     * Map mood strings to a 1-7 score.
      * Unknown moods return 0 (they're ignored in the average).
      * Adjust/extend as needed to match UX.
      */
     private static int scoreForMood(String normalizedMood) {
         switch (normalizedMood) {
-            case "upset":
-            case "awful":
+            case "furious":
+            case "annoyed":
             case "terrible":
-            case "depressed":
-            case "angry":
+			      case "angry":
+            case "frustrated":
+            case "mad":
                 return 1;
+            case "fearful":
+            case "anxious":
+            case "uneasy":
+            case "stressed":
+            case "concerned":
+                return 2;
             case "sad":
             case "down":
             case "unhappy":
-            case "mad":
-                return 2;
+            case "depressed":
+            case "heartbroken":
+            case "gloomy":
+            case "hopeless":
+                return 3;
             case "neutral":
             case "meh":
             case "okay":
             case "ok":
-            case "bored":
-                return 3;
-            case "happy":
+			      case "bored":
+            case "indifferent":
+            case "composed":
+            case "calm":
+            case "balanced":
+                return 4;
             case "good":
             case "content":
-                return 4;
+            case "fine":
+            case "relaxed":
+                return 5;
             case "great":
             case "awesome":
-            case "ecstatic":
             case "joyful":
-                return 5;
+            case "appreciative":
+            case "happy":
+                return 6;
+            case "loving":
+            case "ecstatic":
+            case "euphoric":
+            case "elated":
+                return 7;
             default:
                 return 0; // unknown -> ignored
         }
