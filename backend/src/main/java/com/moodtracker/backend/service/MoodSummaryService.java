@@ -151,7 +151,7 @@ public class MoodSummaryService {
             case "meh":
             case "okay":
             case "ok":
-			      case "bored":
+			case "bored":
             case "indifferent":
             case "composed":
             case "calm":
