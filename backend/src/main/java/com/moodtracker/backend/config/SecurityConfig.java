@@ -43,8 +43,7 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
-            .cors()
-            .and()
+            .cors(Customizer.withDefaults())
             .authorizeHttpRequests(auth -> auth
                 .anyRequest().authenticated()
             )
