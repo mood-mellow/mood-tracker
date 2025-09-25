@@ -3,7 +3,7 @@
 import { signOut } from "aws-amplify/auth";
 import { Button } from "~/components/ui/button";
 import { redirect } from "next/navigation";
-import TestApiCall from "~/components/test/testApiCall";
+// import TestApiCall from "~/components/test/testApiCall";
 import { ActivityTagsPopover } from "~/components/activityTags/activityTagsPopover";
 import MoodEntryForm from "~/components/moodEntryForm";
 import { Navbar01 as Navbar } from "~/components/ui/shadcn-io/navbar-01";
@@ -18,20 +18,9 @@ import {
 import React from "react";
 import { ReviewChart } from "~/components/reviewChart";
 import { CommonMoodsCard } from "~/components/commonMoods";
-import { apiFetch } from "~/lib/apiClient";
-import { useQuery } from "@tanstack/react-query";
-import { Calendar } from "~/components/ui/calendar";
-import { CalendarWithMood } from "~/components/calendarWithMood";
 import { CommonActivitiesCard } from "~/components/commonActivities";
-import Link from "next/link";
-import { useFriends } from "~/hooks/friendHooks";
 
 export default function DashboardPage() {
-  const fetchMoodSummaryData = async () => {
-    const response = await apiFetch("http://localhost:8080/mood-summary");
-  };
-
-  // const friends = useFriends()
   const averageMoods = [
     { date: "2025-09-01", mood: 4 },
     { date: "2025-09-02", mood: 5 },
@@ -47,9 +36,9 @@ export default function DashboardPage() {
   return (
     <>
       <Navbar />
-      <Link href="/social">test</Link>
       <main className="p-8">
-        <TestApiCall />
+        {/*<TestApiCall />*/}
+
         {/*
         <Button
           onClick={async () => {
@@ -60,7 +49,6 @@ export default function DashboardPage() {
         >
           Log Out
         </Button> */}
-        {/*<CalendarWithMood />*/}
 
         <MoodEntryForm />
 
