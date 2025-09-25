@@ -1,11 +1,11 @@
 import Calendar from "react-calendar";
-import { useState } from "react";
+// import { useState } from "react";
 import "~/styles/moodCalendar.css";
 import Image from "next/image";
 import { isSameDay } from "date-fns";
 
 export function MoodCalendar() {
-  const [date, setDate] = useState(new Date());
+  // const [date, setDate] = useState(new Date());
 
   const dailyMoods: Record<string, number> = {
     "2025-09-05": 5,
@@ -67,6 +67,7 @@ export function MoodCalendar() {
         className="p-4"
         tileClassName="rounded-lg"
         tileContent={emojiTileContent}
+        onClickDay={(day) => console.log(` clicked ${day.toDateString()}`)}
         prev2Label={null}
         next2Label={null}
       />

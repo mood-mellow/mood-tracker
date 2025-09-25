@@ -107,7 +107,7 @@ export interface Navbar01Props extends React.HTMLAttributes<HTMLElement> {
 const defaultNavigationLinks: Navbar01NavLink[] = [
   { href: "/dashboard", label: "Dashboard", active: true },
   { href: "/insights", label: "Insights" },
-  { href: "/history", label: "History" },
+  { href: "/dashboard/history", label: "History" },
   { href: "/social", label: "Social" },
 ];
 
@@ -118,10 +118,10 @@ export const Navbar01 = React.forwardRef<HTMLElement, Navbar01Props>(
       logo = <Logo />,
       logoHref = "#",
       navigationLinks = defaultNavigationLinks,
-      signInText = "Add mood",
-      signInHref = "#signin",
-      profileText = "Hey, Bob",
-      profileHref = "#get-started",
+      // signInText = "Add mood",
+      // signInHref = "#signin",
+      // profileText = "Hey, Bob",
+      // profileHref = "#get-started",
       onSignInClick,
       onCtaClick,
       ...props
@@ -216,7 +216,7 @@ export const Navbar01 = React.forwardRef<HTMLElement, Navbar01Props>(
             >
               <div className="text-2xl">{logo}</div>
               <span className="hidden text-xl font-bold sm:inline-block">
-                shadcn.io
+                Mellow
               </span>
             </button>
           </div>
@@ -255,7 +255,8 @@ export const Navbar01 = React.forwardRef<HTMLElement, Navbar01Props>(
                 if (onSignInClick) onSignInClick();
               }}
             >
-              {signInText}
+              {/*{signInText}*/}
+              Add Mood
             </Button>
             <Button
               // size="lg"
@@ -265,11 +266,8 @@ export const Navbar01 = React.forwardRef<HTMLElement, Navbar01Props>(
                 if (onCtaClick) onCtaClick();
               }}
             >
-              {profileText}
-              <Avatar className="m-0 h-7 w-7">
-                <AvatarImage src="https://github.com/shadcn.png" />
-                <AvatarFallback>CN</AvatarFallback>
-              </Avatar>
+              {/*{profileText}*/}
+              Profile
             </Button>
           </div>
         </div>
