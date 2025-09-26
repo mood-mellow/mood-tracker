@@ -3,7 +3,6 @@
 import { signOut } from "aws-amplify/auth";
 import { Button } from "~/components/ui/button";
 import { redirect } from "next/navigation";
-// import TestApiCall from "~/components/test/testApiCall";
 import { ActivityTagsPopover } from "~/components/activityTags/activityTagsPopover";
 import MoodEntryForm from "~/components/moodEntryForm";
 import { Navbar01 as Navbar } from "~/components/ui/shadcn-io/navbar-01";
@@ -15,28 +14,30 @@ import {
   CardHeader,
   CardTitle,
 } from "~/components/ui/card";
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { ReviewChart } from "~/components/reviewChart";
 import { CommonMoodsCard } from "~/components/commonMoods";
 import { CommonActivitiesCard } from "~/components/commonActivities";
 
 export default function DashboardPage() {
-  const averageMoods = [
-    { date: "2025-09-01", mood: 4 },
-    { date: "2025-09-02", mood: 5 },
-    { date: "2025-09-03", mood: 2 },
-    // ...
-  ];
+  const [isReady, setIsReady] = useState(false);
 
-  // Convert to Record<string, number>
-  const moodsByDate = Object.fromEntries(
-    averageMoods.map((m) => [m.date, m.mood]),
-  );
+  // Preload the background image
+  useEffect(() => {
+    const img = new Image();
+    img.src = "/bbblurry.svg";
+    img.onload = () => setIsReady(true);
+  }, []);
 
   return (
     <>
       <Navbar />
-      <main className="p-8">
+      <main
+        className={`min-h-screen bg-cover bg-center bg-no-repeat p-4 transition-opacity duration-700 md:p-8 ${
+          isReady ? "opacity-100" : "opacity-0"
+        }`}
+        style={{ backgroundImage: "url(/bbblurry.svg)" }}
+      >
         {/*<TestApiCall />*/}
 
         {/*
