@@ -21,7 +21,7 @@ public class MoodSummaryController {
     }
 	
 	// week 0 will represent last 7 days, any increments represent preceding 7 days
-	@GetMapping
+	@GetMapping("/weekly")
     public MoodSummaryResponse getWeeklySummary(
         @RequestParam(defaultValue = "0") int offSet,
         Authentication authentication
@@ -30,7 +30,7 @@ public class MoodSummaryController {
 		return moodSummaryService.getWeeklySummary(userId, offSet);
 	}
 
-    @GetMapping
+    @GetMapping("/monthly")
     public MoodSummaryResponse getMonthlySummary(
             @RequestParam(defaultValue = "0") int offSet,
             Authentication authentication

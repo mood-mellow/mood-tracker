@@ -17,6 +17,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.moodtracker.backend.model.MoodEntry;
+import com.moodtracker.backend.dto.MoodEntryDTO;
 import com.moodtracker.backend.model.User;
 import com.moodtracker.backend.repository.MoodEntryRepository;
 import com.moodtracker.backend.repository.UserRepository;
@@ -53,7 +54,7 @@ public class MoodEntryController {
 	}
 
 	@GetMapping
-	public List<MoodEntry> getMoodEntries(
+	public List<MoodEntryDTO> getMoodEntries(
 			Authentication authentication,
 			@RequestParam(required = false) String start,
 			@RequestParam(required = false) String end) {
@@ -62,17 +63,24 @@ public class MoodEntryController {
 		Jwt jwt = (Jwt) authentication.getPrincipal();
 		String userId = jwt.getClaimAsString("sub");
 
+        List<MoodEntry> entries;
 		if (start == null || end == null) {
-			return moodEntryRepository.findByUserId(userId);
-		}
-		try {
-			LocalDateTime startDate = LocalDateTime.parse(start);
-			LocalDateTime endDate = LocalDateTime.parse(end);
-			return moodEntryRepository.findByUserIdAndTimestampBetween(
-					userId, startDate, endDate);
-		} catch (DateTimeParseException e) {
-			throw new IllegalArgumentException("Invalid date format. Use ISO-8601 (e.g. 2025-08-01)");
-		}
+            entries = moodEntryRepository.findByUserId(userId);
+		} else {
+            try {
+                LocalDateTime startDate = LocalDateTime.parse(start);
+                LocalDateTime endDate = LocalDateTime.parse(end);
+                entries = moodEntryRepository.findByUserIdAndTimestampBetween(
+                        userId, startDate, endDate);
+            } catch (DateTimeParseException e) {
+                throw new IllegalArgumentException("Invalid date format. Use ISO-8601 (e.g. 2025-08-01)");
+            }
+        }
+        
+        // Mapping MoodEntry -> MoodEntryDTO
+        return entries.stream()
+                .map(MoodEntryDTO::new)
+                .toList();
 	}
 
 	// Delete a mood entry
