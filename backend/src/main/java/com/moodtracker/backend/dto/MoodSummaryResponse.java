@@ -4,25 +4,51 @@ import java.util.List;
 import java.util.Map;
 
 public class MoodSummaryResponse {
-	private int week;
-	private double weeklyAvgMood;
-	private List<Map.Entry<String, Integer>> mostCommonMoods;
-	private List<Map.Entry<String, Integer>> mostCommonActivities;
+    private String periodType;
+    private int offSet;
+    private double averageMood;
+    private List<Map.Entry<String, Integer>> mostCommonMoods;
+    private List<Map.Entry<String, Integer>> mostCommonActivities;
     private List<DaySummary> days;
 
-    public MoodSummaryResponse(int week, double weeklyAvgMood, List<Map.Entry<String, Integer>> mostCommonMoods, List<Map.Entry<String, Integer>> mostCommonActivities, List<DaySummary> days) {
-        this.week = week;
-		this.weeklyAvgMood = weeklyAvgMood;
-		this.mostCommonMoods = mostCommonMoods;
-		this.mostCommonActivities = mostCommonActivities;
-		this.days = days;
+    public MoodSummaryResponse(String periodType,
+                               int offSet,
+                               double averageMood,
+                               List<Map.Entry<String, Integer>> mostCommonMoods,
+                               List<Map.Entry<String, Integer>> mostCommonActivities,
+                               List<DaySummary> days
+    ) {
+        this.periodType = periodType;
+        this.offSet = offSet;
+        this.averageMood = averageMood;
+        this.mostCommonMoods = mostCommonMoods;
+        this.mostCommonActivities = mostCommonActivities;
+        this.days = days;
     }
 
-	public int getWeek() { return week; }
-	public double getWeeklyAvgMood() { return weeklyAvgMood; }
-	public List<Map.Entry<String, Integer>> getMostCommonMoods() { return mostCommonMoods; }
-	public List<Map.Entry<String, Integer>> getMostCommonActivities() { return mostCommonActivities; }
-    public List<DaySummary> getDays() { return days; }
+    public String getPeriodType() {
+        return periodType;
+    }
+
+    public int getOffSet() {
+        return offSet;
+    }
+
+    public double getAverageMood() {
+        return averageMood;
+    }
+
+    public List<Map.Entry<String, Integer>> getMostCommonMoods() {
+        return mostCommonMoods;
+    }
+
+    public List<Map.Entry<String, Integer>> getMostCommonActivities() {
+        return mostCommonActivities;
+    }
+
+    public List<DaySummary> getDays() {
+        return days;
+    }
 
     public static class DaySummary {
         private String date; // YYYY-MM-DD
@@ -35,8 +61,16 @@ public class MoodSummaryResponse {
             this.activityCounts = activityCounts;
         }
 
-        public String getDate() { return date; }
-        public double getAvgMood() { return avgMood; }
-        public Map<String, Integer> getActivityCounts() { return activityCounts; }
+        public String getDate() {
+            return date;
+        }
+
+        public double getAvgMood() {
+            return avgMood;
+        }
+
+        public Map<String, Integer> getActivityCounts() {
+            return activityCounts;
+        }
     }
 }

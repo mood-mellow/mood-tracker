@@ -16,7 +16,9 @@ export interface DayEntry {
 }
 
 const fetchMoodSummaryData = async (): Promise<MoodSummary> => {
-  return await apiFetch<MoodSummary>("http://localhost:8080/mood-summary");
+  return await apiFetch<MoodSummary>(
+    "http://localhost:8080/mood-summary/weekly",
+  );
 };
 
 export const useMoodSummary = () => {

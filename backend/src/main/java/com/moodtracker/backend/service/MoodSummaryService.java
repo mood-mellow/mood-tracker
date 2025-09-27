@@ -30,14 +30,30 @@ public class MoodSummaryService {
         LocalDate endDate = LocalDate.now().minusWeeks(weekOffset); // inclusive
         LocalDate startDate = endDate.minusDays(6); // 7-day window
 
-        return getSummaryForRange(userId, startDate, endDate, weekOffset);
+        return getSummaryForRange(userId, startDate, endDate, "weekly", weekOffset);
+    }
+
+    public MoodSummaryResponse getMonthlySummary(String userId, int monthOffset) {
+        // monthOffset = 0 -> current month, 1 -> previous month, etc.
+        LocalDate now = LocalDate.now().minusMonths(monthOffset);
+
+        // Start at first day of the month
+        LocalDate startDate = now.withDayOfMonth(1);
+        // End at last day of the month
+        LocalDate endDate = now.withDayOfMonth(now.lengthOfMonth());
+
+        return getSummaryForRange(userId, startDate, endDate, "monthly", monthOffset);
     }
 
     /*
      * Same as above but with explicit date range (inclusive).
      */
-    public MoodSummaryResponse getSummaryForRange(String userId, LocalDate startDate, LocalDate endDate,
-            int weekOffset) {
+    public MoodSummaryResponse getSummaryForRange(
+            String userId,
+            LocalDate startDate,
+            LocalDate endDate,
+            String periodType,
+            int offSet) {
         // Convert to DateTime bounds (inclusive and fixes earlier issue)
         LocalDateTime startDateTime = startDate.atStartOfDay();
         LocalDateTime endDateTime = endDate.atTime(23, 59, 59, 999_999_999);
@@ -71,7 +87,7 @@ public class MoodSummaryService {
                     .mapToInt(MoodSummaryService::scoreForMood) // returns 0 if unknown
                     .filter(score -> score > 0) // ignore unknown moods
                     .boxed()
-                    .collect(Collectors.toList());
+                    .toList();
 
             // Weekly pool
             allScores.addAll(dayScores);
@@ -98,6 +114,7 @@ public class MoodSummaryService {
                     activityCounts));
         }
 
+
         List<Map.Entry<String, Integer>> mostCommonActivities = new ArrayList<>(activityCounts.entrySet());
         mostCommonActivities.sort(Map.Entry.comparingByValue()); // asc order
         // keep only three most common moods
@@ -112,10 +129,9 @@ public class MoodSummaryService {
             mostCommonMoods.removeFirst();
         }
 
-        double weeklyAvgMood = allScores.isEmpty() ? 0.0
-                : allScores.stream().mapToInt(Integer::intValue).average().orElse(0.0);
+        double averageMood = allScores.isEmpty() ? 0.0 : allScores.stream().mapToInt(Integer::intValue).average().orElse(0.0);
 
-        return new MoodSummaryResponse(weekOffset, weeklyAvgMood, mostCommonMoods, mostCommonActivities, days);
+        return new MoodSummaryResponse(periodType, offSet, averageMood, mostCommonMoods, mostCommonActivities, days);
     }
 
     // Helpers to consider edge cases
@@ -127,38 +143,59 @@ public class MoodSummaryService {
     }
 
     /**
-     * Map mood strings to a 1-5 score.
+     * Map mood strings to a 1-7 score.
      * Unknown moods return 0 (they're ignored in the average).
      * Adjust/extend as needed to match UX.
      */
     private static int scoreForMood(String normalizedMood) {
         switch (normalizedMood) {
-            case "upset":
-            case "awful":
+            case "furious":
+            case "annoyed":
             case "terrible":
-            case "depressed":
-            case "angry":
+			case "angry":
+            case "frustrated":
+            case "mad":
                 return 1;
+            case "fearful":
+            case "anxious":
+            case "uneasy":
+            case "stressed":
+            case "concerned":
+                return 2;
             case "sad":
             case "down":
             case "unhappy":
-            case "mad":
-                return 2;
+            case "depressed":
+            case "heartbroken":
+            case "gloomy":
+            case "hopeless":
+                return 3;
             case "neutral":
             case "meh":
             case "okay":
             case "ok":
-            case "bored":
-                return 3;
-            case "happy":
+			case "bored":
+            case "indifferent":
+            case "composed":
+            case "calm":
+            case "balanced":
+                return 4;
             case "good":
             case "content":
-                return 4;
+            case "fine":
+            case "relaxed":
+                return 5;
             case "great":
             case "awesome":
-            case "ecstatic":
             case "joyful":
-                return 5;
+            case "appreciative":
+            case "happy":
+                return 6;
+            case "loving":
+            case "ecstatic":
+            case "euphoric":
+            case "elated":
+                return 7;
             default:
                 return 0; // unknown -> ignored
         }

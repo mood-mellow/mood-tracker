@@ -1,6 +1,7 @@
 package com.moodtracker.backend.model;
 
 import jakarta.persistence.*; // For @Entity, @Id, etc.
+
 import java.time.LocalDateTime; // For LocalDateTime
 import java.util.List; // For List
 
@@ -45,7 +46,7 @@ public class MoodEntry {
     }
 
     public MoodEntry(LocalDateTime timestamp, String mood, String color, User user, List<ActivityTag> activityTags,
-            String journalEntry) {
+                     String journalEntry) {
         this.timestamp = timestamp;
         this.mood = mood;
         this.color = color;
