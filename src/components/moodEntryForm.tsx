@@ -46,12 +46,13 @@ const formSchema = moodEntryFormSchema;
 const MOOD_OPTIONS = [
   { value: "very_happy", label: "Very Happy" },
   { value: "happy", label: "Happy" },
+  { value: "pleased", label: "Pleased" },
   { value: "neutral", label: "Neutral" },
   { value: "sad", label: "Sad" },
   { value: "very_sad", label: "Very Sad" },
   { value: "angry", label: "Angry" },
-  { value: "anxious", label: "Anxious" },
-  { value: "excited", label: "Excited" },
+  // { value: "anxious", label: "Anxious" },
+  // { value: "excited", label: "Excited" },
 ];
 
 const EMOJI_OPTIONS = ["😄", "😊", "😐", "😢", "😭", "😠", "😰", "🤩"];

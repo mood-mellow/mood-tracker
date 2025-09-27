@@ -67,9 +67,18 @@ public class MoodSummaryService {
 
         List<MoodSummaryResponse.DaySummary> days = new ArrayList<>();
         List<Integer> allScores = new ArrayList<>();
+        HashMap<String, Integer> moodCounts = new HashMap<>();
+        Map<String, Integer> activityCounts = new HashMap<>();
 
         for (LocalDate d = startDate; !d.isAfter(endDate); d = d.plusDays(1)) {
             List<MoodEntry> dayEntries = byDate.getOrDefault(d, Collections.emptyList());
+
+            // increment each occuring mood by 1
+            for (MoodEntry me : dayEntries) {
+                String mood = me.getMood();
+                mood = MoodSummaryService.normalizeMood(mood);
+                moodCounts.merge(mood, 1, Integer::sum);
+            }
 
             // Average mood via score mapping since it will be easier for AI insights
             List<Integer> dayScores = dayEntries.stream()
@@ -78,7 +87,7 @@ public class MoodSummaryService {
                     .mapToInt(MoodSummaryService::scoreForMood) // returns 0 if unknown
                     .filter(score -> score > 0) // ignore unknown moods
                     .boxed()
-                    .collect(Collectors.toList());
+                    .toList();
 
             // Weekly pool
             allScores.addAll(dayScores);
@@ -87,7 +96,6 @@ public class MoodSummaryService {
                     : dayScores.stream().mapToInt(Integer::intValue).average().orElse(0.0);
 
             // Activity counts
-            Map<String, Integer> activityCounts = new HashMap<>();
             for (MoodEntry me : dayEntries) {
                 List<ActivityTag> tags = me.getActivityTags();
                 if (tags == null)
@@ -105,10 +113,25 @@ public class MoodSummaryService {
                     avgMood,
                     activityCounts));
         }
-		
-		    double averageMood = allScores.isEmpty() ? 0.0 : allScores.stream().mapToInt(Integer::intValue).average().orElse(0.0);
 
-        return new MoodSummaryResponse(periodType, offSet, averageMood, days);
+
+        List<Map.Entry<String, Integer>> mostCommonActivities = new ArrayList<>(activityCounts.entrySet());
+        mostCommonActivities.sort(Map.Entry.comparingByValue()); // asc order
+        // keep only three most common moods
+        while (mostCommonActivities.size() > 3) {
+            mostCommonActivities.removeFirst();
+        }
+
+        List<Map.Entry<String, Integer>> mostCommonMoods = new ArrayList<>(moodCounts.entrySet());
+        mostCommonMoods.sort(Map.Entry.comparingByValue()); // asc order
+        // keep only three most common moods
+        while (mostCommonMoods.size() > 3) {
+            mostCommonMoods.removeFirst();
+        }
+
+        double averageMood = allScores.isEmpty() ? 0.0 : allScores.stream().mapToInt(Integer::intValue).average().orElse(0.0);
+
+        return new MoodSummaryResponse(periodType, offSet, averageMood, mostCommonMoods, mostCommonActivities, days);
     }
 
     // Helpers to consider edge cases

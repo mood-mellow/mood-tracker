@@ -55,7 +55,14 @@ export async function apiFetch<T = unknown>(
     throw new Error(`API Error: ${response.status} - ${errorText}`);
   }
 
-  return response.json() as Promise<T>;
+  let data: Promise<T>;
+  try {
+    data = (await response.json()) as Promise<T>;
+  } catch (error) {
+    throw new Error(`API Error: ${(error as Error).message}`);
+  }
+
+  return data;
 }
 
 /**

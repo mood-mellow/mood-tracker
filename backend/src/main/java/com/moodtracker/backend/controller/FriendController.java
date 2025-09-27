@@ -14,6 +14,12 @@ import java.util.List;
 public class FriendController {
     private final FriendService friendService;
 
+    // get pending requests from senders using the receiverId
+    @GetMapping("/pending-request/{receiverId}")
+    public List<FriendRequestDTO> getPendingRequests(@PathVariable String receiverId) {
+        return friendService.getPendingRequests(receiverId);
+    }
+
     @PostMapping("/request")
     public FriendRequestDTO sendRequest(@RequestParam String senderId, @RequestParam String receiverId) {
         return friendService.sendRequest(senderId, receiverId);
