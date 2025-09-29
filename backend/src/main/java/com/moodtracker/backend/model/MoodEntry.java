@@ -2,7 +2,7 @@ package com.moodtracker.backend.model;
 
 import jakarta.persistence.*; // For @Entity, @Id, etc.
 
-import java.time.LocalDateTime; // For LocalDateTime
+import java.time.Instant;
 import java.util.List; // For List
 
 @Entity
@@ -37,7 +37,7 @@ public class MoodEntry {
 
     // Timestamp when mood entry was created (if we plan on using this)
     @Column(nullable = false)
-    private LocalDateTime timestamp;
+    private Instant timestamp;
 
     // --- Constructors ---
 
@@ -45,7 +45,7 @@ public class MoodEntry {
         // JPA requires a default constructor
     }
 
-    public MoodEntry(LocalDateTime timestamp, String mood, String color, User user, List<ActivityTag> activityTags,
+    public MoodEntry(Instant timestamp, String mood, String color, User user, List<ActivityTag> activityTags,
                      String journalEntry) {
         this.timestamp = timestamp;
         this.mood = mood;
@@ -65,11 +65,11 @@ public class MoodEntry {
         this.id = id;
     }
 
-    public LocalDateTime getTimestamp() {
+    public Instant getTimestamp() {
         return timestamp;
     }
 
-    public void setTimestamp(LocalDateTime timestamp) {
+    public void setTimestamp(Instant timestamp) {
         this.timestamp = timestamp;
     }
 

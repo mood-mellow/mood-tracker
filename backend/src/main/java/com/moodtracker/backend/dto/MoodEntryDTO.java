@@ -1,6 +1,6 @@
 package com.moodtracker.backend.dto;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 
 import com.moodtracker.backend.model.MoodEntry;
 
@@ -10,7 +10,7 @@ public class MoodEntryDTO {
     private String color;
     private String emoji;
     private String journalEntry;
-    private LocalDateTime timestamp;
+    private Instant timestamp;
 
     // Constructor that maps from entity to DTO without activityTags
     public MoodEntryDTO(MoodEntry entry) {
@@ -28,5 +28,5 @@ public class MoodEntryDTO {
     public String getColor() { return color; }
     public String getEmoji() { return emoji; }
     public String getJournalEntry() { return journalEntry; }
-    public LocalDateTime getTimestamp() { return timestamp; }
+    public Instant getTimestamp() { return timestamp; }
 }
