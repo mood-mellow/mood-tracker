@@ -1,13 +1,18 @@
+"use client";
+
 import Calendar from "react-calendar";
-// import { useState } from "react";
 import "~/styles/moodCalendar.css";
 import Image from "next/image";
 import { isSameDay } from "date-fns";
 import type { ActivityTag } from "~/hooks/activityTagHooks";
 import { apiFetch } from "~/lib/apiClient";
-import { useMutation, useQuery } from "@tanstack/react-query";
+import { useMutation } from "@tanstack/react-query";
 import { useState, type Dispatch, type SetStateAction } from "react";
 import { Card, CardContent, CardTitle } from "./ui/card";
+import type { View } from "react-calendar/dist/shared/types.js";
+import { fromZonedTime } from "date-fns-tz";
+
+const targetTimeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
 
 interface MoodEntry {
   id: string;
@@ -18,34 +23,26 @@ interface MoodEntry {
   activityTags: ActivityTag[];
 }
 
-function formatLocalDateTime(date: Date): string {
-  const pad = (n: number) => String(n).padStart(2, "0");
-  return (
-    date.getFullYear() +
-    "-" +
-    pad(date.getMonth() + 1) +
-    "-" +
-    pad(date.getDate()) +
-    "T" +
-    pad(date.getHours()) +
-    ":" +
-    pad(date.getMinutes()) +
-    ":" +
-    pad(date.getSeconds())
-  );
+function getDayRangeInUTC(date: Date, timeZone: string) {
+  // Get the local date parts in the target timezone
+  const localStart = new Date(date);
+  localStart.setHours(0, 0, 0, 0);
+
+  const localEnd = new Date(date);
+  localEnd.setHours(23, 59, 59, 999);
+
+  // Convert those "wall times" in that timezone to UTC
+  const startUtc = fromZonedTime(localStart, timeZone);
+  const endUtc = fromZonedTime(localEnd, timeZone);
+
+  return { startUtc, endUtc };
 }
 
-async function fetchMoodEntriesInDay(start: Date) {
-  start.setHours(0, 0, 0, 0);
-  const end: Date = new Date(start);
-  end.setHours(23, 59, 59, 99);
+async function fetchMoodEntriesInDay(date: Date, timeZone: string) {
+  const { startUtc, endUtc } = getDayRangeInUTC(date, timeZone);
 
-  const startString = formatLocalDateTime(start);
-  const endString = formatLocalDateTime(end);
-  console.log(startString);
-  // console.log(end.toISOString());
   return await apiFetch<MoodEntry[]>(
-    `http://localhost:8080/api/mood-entries?start=${startString}&end=${endString}`,
+    `http://localhost:8080/api/mood-entries?start=${startUtc.toISOString()}&end=${endUtc.toISOString()}`,
   );
 }
 
@@ -53,9 +50,14 @@ const useMoodEntryMutation = (
   setMoodEntries: Dispatch<SetStateAction<MoodEntry[]>>,
 ) =>
   useMutation({
-    mutationFn: (start: Date) => fetchMoodEntriesInDay(start),
+    mutationFn: (start: Date) => fetchMoodEntriesInDay(start, targetTimeZone),
     onSuccess: (data) => {
-      setMoodEntries(data);
+      setMoodEntries(
+        data.map((entry) => ({
+          ...entry,
+          timestamp: entry.timestamp,
+        })),
+      );
     },
   });
 
@@ -100,7 +102,7 @@ export function MoodCalendar() {
     return "/emojis/unknown_face.svg";
   };
 
-  const emojiTileContent = ({ date, view }) => {
+  const emojiTileContent = ({ date, view }: { date: Date; view: View }) => {
     // Only render emojis on the month view
     if (view === "month") {
       const today = new Date();
@@ -136,14 +138,47 @@ export function MoodCalendar() {
           next2Label={null}
         />
       ) : (
-        <>
-          {moodEntries.map((moodEntry) => (
-            <Card key={moodEntry.id}>
-              <CardTitle>{moodEntry.timestamp.getDate()}</CardTitle>
-              <CardContent>{moodEntry.journalEntry}</CardContent>
-            </Card>
-          ))}
-        </>
+        <div>
+          {moodEntries.map((moodEntry) => {
+            const correctedDate = new Date(moodEntry.timestamp);
+
+            const month = correctedDate.toLocaleString("en-US", {
+              month: "long",
+              timeZone: "America/New_York", // force Eastern Time
+            });
+
+            const day = correctedDate.toLocaleString("en-US", {
+              day: "numeric",
+              timeZone: "America/New_York",
+            });
+
+            const year = correctedDate.toLocaleString("en-US", {
+              year: "numeric",
+              timeZone: "America/New_York",
+            });
+
+            const time = correctedDate.toLocaleTimeString("en-US", {
+              hour: "2-digit",
+              minute: "2-digit",
+              second: "2-digit",
+              hour12: true,
+              timeZone: "America/New_York",
+            });
+
+            return (
+              <Card key={moodEntry.id} className="px-4">
+                <CardContent>
+                  <CardTitle>
+                    {month} {day}, {year}
+                  </CardTitle>
+                  <p>{time}</p>
+                  <b>Note: </b>
+                  {moodEntry.journalEntry}
+                </CardContent>
+              </Card>
+            );
+          })}
+        </div>
       )}
     </div>
   );
