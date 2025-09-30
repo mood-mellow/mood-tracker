@@ -4,74 +4,16 @@ import Calendar from "react-calendar";
 import "~/styles/moodCalendar.css";
 import Image from "next/image";
 import { isSameDay } from "date-fns";
-import type { ActivityTag } from "~/hooks/activityTagHooks";
-import { apiFetch } from "~/lib/apiClient";
-import { useMutation } from "@tanstack/react-query";
-import { useState, type Dispatch, type SetStateAction } from "react";
+import { useState } from "react";
 import { Card, CardContent, CardTitle } from "./ui/card";
 import type { View } from "react-calendar/dist/shared/types.js";
-import { fromZonedTime } from "date-fns-tz";
 import { useMonthlyMoodSummary } from "~/hooks/moodSummaryHooks";
-
-const targetTimeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
-
-interface MoodEntry {
-  id: string;
-  mood: string;
-  color: string;
-  journalEntry: string;
-  timestamp: Date;
-  activityTags: ActivityTag[];
-}
-
-function getDayRangeInUTC(date: Date, timeZone: string) {
-  // Get the local date parts in the target timezone
-  const localStart = new Date(date);
-  localStart.setHours(0, 0, 0, 0);
-
-  const localEnd = new Date(date);
-  localEnd.setHours(23, 59, 59, 999);
-
-  // Convert those "wall times" in that timezone to UTC
-  const startUtc = fromZonedTime(localStart, timeZone);
-  const endUtc = fromZonedTime(localEnd, timeZone);
-
-  return { startUtc, endUtc };
-}
-
-async function fetchMoodEntriesInDay(date: Date, timeZone: string) {
-  const { startUtc, endUtc } = getDayRangeInUTC(date, timeZone);
-
-  return await apiFetch<MoodEntry[]>(
-    `http://localhost:8080/api/mood-entries?start=${startUtc.toISOString()}&end=${endUtc.toISOString()}`,
-  );
-}
-
-const useMoodEntryMutation = (
-  setMoodEntries: Dispatch<SetStateAction<MoodEntry[]>>,
-) =>
-  useMutation({
-    mutationFn: (start: Date) => fetchMoodEntriesInDay(start, targetTimeZone),
-    onSuccess: (data) => {
-      setMoodEntries(
-        data.map((entry) => ({
-          ...entry,
-          timestamp: entry.timestamp,
-        })),
-      );
-    },
-  });
+import { useMoodEntryMutation, type MoodEntry } from "~/hooks/moodEntryHooks";
 
 export function MoodCalendar() {
   const [moodEntries, setMoodEntries] = useState<MoodEntry[]>([]);
   const getMoodEntriesInDay = useMoodEntryMutation(setMoodEntries);
   const monthlyMoodSummary = useMonthlyMoodSummary();
-
-  const dailyMoods: Record<string, number> = {
-    "2025-09-05": 5,
-    "2025-09-10": 4,
-    "2025-09-15": 3,
-  };
 
   const getMoodEmojiSvgSrc = (date: Date): string => {
     const dateKey = date.toISOString().split("T")[0];
