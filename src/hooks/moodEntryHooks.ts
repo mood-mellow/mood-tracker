@@ -70,17 +70,8 @@ async function fetchMoodEntriesInDay(date: Date, timeZone: string) {
   );
 }
 
-export const useMoodEntryMutation = (
-  setMoodEntries: Dispatch<SetStateAction<MoodEntry[]>>,
-) =>
+export const useMoodEntryMutation = () =>
   useMutation({
     mutationFn: (start: Date) => fetchMoodEntriesInDay(start, targetTimeZone),
-    onSuccess: (data) => {
-      setMoodEntries(
-        data.map((entry) => ({
-          ...entry,
-          timestamp: entry.timestamp,
-        })),
-      );
-    },
+    // onSuccess: (data) => {},
   });
