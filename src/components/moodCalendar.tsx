@@ -9,11 +9,19 @@ import { Card, CardContent, CardTitle } from "./ui/card";
 import type { View } from "react-calendar/dist/shared/types.js";
 import { useMonthlyMoodSummary } from "~/hooks/moodSummaryHooks";
 import { useMoodEntryMutation, type MoodEntry } from "~/hooks/moodEntryHooks";
+import { Button } from "./ui/button";
+
+enum MoodCalendarViews {
+  Calendar,
+  Entries,
+}
 
 export function MoodCalendar() {
-  const [moodEntries, setMoodEntries] = useState<MoodEntry[]>([]);
-  const getMoodEntriesInDay = useMoodEntryMutation(setMoodEntries);
+  const moodEntriesInDay = useMoodEntryMutation();
   const monthlyMoodSummary = useMonthlyMoodSummary();
+  const [view, setView] = useState<MoodCalendarViews>(
+    MoodCalendarViews.Calendar,
+  );
 
   const getMoodEmojiSvgSrc = (date: Date): string => {
     const dateKey = date.toISOString().split("T")[0];
@@ -68,58 +76,64 @@ export function MoodCalendar() {
 
   return (
     <div>
-      {moodEntries.length == 0 && monthlyMoodSummary.isSuccess ? (
+      {view == MoodCalendarViews.Calendar && monthlyMoodSummary.isSuccess ? (
         <Calendar
           className="p-4"
           tileClassName="rounded-lg"
           tileContent={emojiTileContent}
           onClickDay={(day) => {
-            getMoodEntriesInDay.mutate(day);
+            moodEntriesInDay.mutate(day);
+            setView(MoodCalendarViews.Entries);
           }}
           prev2Label={null}
           next2Label={null}
         />
       ) : (
         <div>
-          {moodEntries.map((moodEntry) => {
-            const correctedDate = new Date(moodEntry.timestamp);
+          <Button onClick={() => setView(MoodCalendarViews.Calendar)}>
+            Back
+          </Button>
 
-            const month = correctedDate.toLocaleString("en-US", {
-              month: "long",
-              timeZone: "America/New_York", // force Eastern Time
-            });
+          {view == MoodCalendarViews.Entries &&
+            moodEntriesInDay.data?.map((moodEntry) => {
+              const correctedDate = new Date(moodEntry.timestamp);
 
-            const day = correctedDate.toLocaleString("en-US", {
-              day: "numeric",
-              timeZone: "America/New_York",
-            });
+              const month = correctedDate.toLocaleString("en-US", {
+                month: "long",
+                timeZone: "America/New_York", // force Eastern Time
+              });
 
-            const year = correctedDate.toLocaleString("en-US", {
-              year: "numeric",
-              timeZone: "America/New_York",
-            });
+              const day = correctedDate.toLocaleString("en-US", {
+                day: "numeric",
+                timeZone: "America/New_York",
+              });
 
-            const time = correctedDate.toLocaleTimeString("en-US", {
-              hour: "2-digit",
-              minute: "2-digit",
-              second: "2-digit",
-              hour12: true,
-              timeZone: "America/New_York",
-            });
+              const year = correctedDate.toLocaleString("en-US", {
+                year: "numeric",
+                timeZone: "America/New_York",
+              });
 
-            return (
-              <Card key={moodEntry.id} className="px-4">
-                <CardContent>
-                  <CardTitle>
-                    {month} {day}, {year}
-                  </CardTitle>
-                  <p>{time}</p>
-                  <b>Note: </b>
-                  {moodEntry.journalEntry}
-                </CardContent>
-              </Card>
-            );
-          })}
+              const time = correctedDate.toLocaleTimeString("en-US", {
+                hour: "2-digit",
+                minute: "2-digit",
+                second: "2-digit",
+                hour12: true,
+                timeZone: "America/New_York",
+              });
+
+              return (
+                <Card key={moodEntry.id} className="px-4">
+                  <CardContent>
+                    <CardTitle>
+                      {month} {day}, {year}
+                    </CardTitle>
+                    <p>{time}</p>
+                    <b>Note: </b>
+                    {moodEntry.journalEntry}
+                  </CardContent>
+                </Card>
+              );
+            })}
         </div>
       )}
     </div>
