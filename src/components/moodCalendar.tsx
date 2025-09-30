@@ -10,6 +10,7 @@ import type { View } from "react-calendar/dist/shared/types.js";
 import { useMonthlyMoodSummary } from "~/hooks/moodSummaryHooks";
 import { useMoodEntryMutation, type MoodEntry } from "~/hooks/moodEntryHooks";
 import { Button } from "./ui/button";
+import { MoodEntryCard } from "./moodEntryCard";
 
 enum MoodCalendarViews {
   Calendar,
@@ -96,42 +97,12 @@ export function MoodCalendar() {
 
           {view == MoodCalendarViews.Entries &&
             moodEntriesInDay.data?.map((moodEntry) => {
-              const correctedDate = new Date(moodEntry.timestamp);
-
-              const month = correctedDate.toLocaleString("en-US", {
-                month: "long",
-                timeZone: "America/New_York", // force Eastern Time
-              });
-
-              const day = correctedDate.toLocaleString("en-US", {
-                day: "numeric",
-                timeZone: "America/New_York",
-              });
-
-              const year = correctedDate.toLocaleString("en-US", {
-                year: "numeric",
-                timeZone: "America/New_York",
-              });
-
-              const time = correctedDate.toLocaleTimeString("en-US", {
-                hour: "2-digit",
-                minute: "2-digit",
-                second: "2-digit",
-                hour12: true,
-                timeZone: "America/New_York",
-              });
-
               return (
-                <Card key={moodEntry.id} className="px-4">
-                  <CardContent>
-                    <CardTitle>
-                      {month} {day}, {year}
-                    </CardTitle>
-                    <p>{time}</p>
-                    <b>Note: </b>
-                    {moodEntry.journalEntry}
-                  </CardContent>
-                </Card>
+                <MoodEntryCard
+                  key={moodEntry.id}
+                  date={moodEntry.timestamp}
+                  journalEntry={moodEntry.journalEntry}
+                />
               );
             })}
         </div>
