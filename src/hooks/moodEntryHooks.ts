@@ -2,7 +2,6 @@ import { apiFetch } from "~/lib/apiClient";
 import z from "zod";
 import type { ActivityTag } from "~/hooks/activityTagHooks";
 import { fromZonedTime } from "date-fns-tz";
-import type { Dispatch, SetStateAction } from "react";
 import { useMutation } from "@tanstack/react-query";
 
 export interface MoodEntry {

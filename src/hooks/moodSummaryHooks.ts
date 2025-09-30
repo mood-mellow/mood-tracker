@@ -36,7 +36,7 @@ export const useMoodSummary = () => {
 
 export const useMonthlyMoodSummary = () => {
   return useQuery({
-    queryKey: ["mood-summary"],
+    queryKey: ["monthly-mood-summary"],
     queryFn: fetchMonthlyMoodSummaryData,
   });
 };
