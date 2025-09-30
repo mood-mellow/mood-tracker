@@ -1,6 +1,6 @@
 package com.moodtracker.backend.controller;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.time.format.DateTimeParseException;
 import java.util.List;
 
@@ -58,7 +58,7 @@ public class MoodEntryController {
 		moodEntry.setJournalEntry(dto.getJournalEntry());
 		moodEntry.setUser(user);
 		moodEntry.setActivityTags(tags);
-		moodEntry.setTimestamp(LocalDateTime.now());
+		moodEntry.setTimestamp(Instant.now());
 
 		MoodEntry saved = moodEntryRepository.save(moodEntry);
 		return ResponseEntity.ok(saved);
@@ -73,20 +73,22 @@ public class MoodEntryController {
 		Jwt jwt = (Jwt) authentication.getPrincipal();
 		String userId = jwt.getClaimAsString("sub");
 
+
         List<MoodEntry> entries;
 		if (start == null || end == null) {
             entries = moodEntryRepository.findByUserId(userId);
 		} else {
             try {
-                LocalDateTime startDate = LocalDateTime.parse(start);
-                LocalDateTime endDate = LocalDateTime.parse(end);
+                Instant startInstant = Instant.parse(start);
+                Instant endInstant = Instant.parse(end);
+
                 entries = moodEntryRepository.findByUserIdAndTimestampBetween(
-                        userId, startDate, endDate);
+                        userId, startInstant, endInstant);
             } catch (DateTimeParseException e) {
-                throw new IllegalArgumentException("Invalid date format. Use ISO-8601 (e.g. 2025-08-01)");
+                throw new IllegalArgumentException("Invalid date format. Use UTC format");
             }
         }
-        
+
         // Mapping MoodEntry -> MoodEntryDTO
         return entries.stream()
                 .map(MoodEntryDTO::new)

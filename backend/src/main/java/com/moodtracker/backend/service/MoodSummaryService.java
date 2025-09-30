@@ -7,8 +7,11 @@ import com.moodtracker.backend.repository.MoodEntryRepository;
 
 import org.springframework.stereotype.Service;
 
+import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.ZoneOffset;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -58,12 +61,15 @@ public class MoodSummaryService {
         LocalDateTime startDateTime = startDate.atStartOfDay();
         LocalDateTime endDateTime = endDate.atTime(23, 59, 59, 999_999_999);
 
+        Instant startUtc = startDateTime.toInstant(ZoneOffset.UTC);
+        Instant endUtc = endDateTime.toInstant(ZoneOffset.UTC);
+
         List<MoodEntry> entries = moodEntryRepository
-                .findByUserIdAndTimestampBetween(userId, startDateTime, endDateTime);
+                .findByUserIdAndTimestampBetween(userId, startUtc, endUtc);
 
         // Bucket entries by LocalDate
         Map<LocalDate, List<MoodEntry>> byDate = entries.stream()
-                .collect(Collectors.groupingBy(e -> e.getTimestamp().toLocalDate()));
+            .collect(Collectors.groupingBy(e -> LocalDate.ofInstant(e.getTimestamp(), ZoneId.systemDefault())));
 
         List<MoodSummaryResponse.DaySummary> days = new ArrayList<>();
         List<Integer> allScores = new ArrayList<>();

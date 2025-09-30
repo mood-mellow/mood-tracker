@@ -21,9 +21,22 @@ const fetchMoodSummaryData = async (): Promise<MoodSummary> => {
   );
 };
 
+const fetchMonthlyMoodSummaryData = async (): Promise<MoodSummary> => {
+  return await apiFetch<MoodSummary>(
+    "http://localhost:8080/mood-summary/monthly",
+  );
+};
+
 export const useMoodSummary = () => {
   return useQuery({
     queryKey: ["mood-summary"],
     queryFn: fetchMoodSummaryData,
+  });
+};
+
+export const useMonthlyMoodSummary = () => {
+  return useQuery({
+    queryKey: ["monthly-mood-summary"],
+    queryFn: fetchMonthlyMoodSummaryData,
   });
 };

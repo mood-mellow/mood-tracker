@@ -1,6 +1,6 @@
 package com.moodtracker.backend.dto;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.util.List;
 
 public class MoodEntryRequest {
@@ -10,7 +10,7 @@ public class MoodEntryRequest {
 	private String emoji;
 	private String journalEntry;
 	private List<String> activityTagIds;
-	private LocalDateTime timestamp;
+	private Instant timestamp;
 
 	// Getters and setters
 	public String getUserId() {
@@ -61,11 +61,11 @@ public class MoodEntryRequest {
 		this.activityTagIds = activityTagIds;
 	}
 
-	public LocalDateTime getTimestamp() {
+	public Instant getTimestamp() {
 		return timestamp;
 	}
 
-	public void setTimestamp(LocalDateTime timestamp) {
+	public void setTimestamp(Instant timestamp) {
 		this.timestamp = timestamp;
 	}
 }
