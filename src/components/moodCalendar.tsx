@@ -11,6 +11,7 @@ import { useState, type Dispatch, type SetStateAction } from "react";
 import { Card, CardContent, CardTitle } from "./ui/card";
 import type { View } from "react-calendar/dist/shared/types.js";
 import { fromZonedTime } from "date-fns-tz";
+import { useMonthlyMoodSummary } from "~/hooks/moodSummaryHooks";
 
 const targetTimeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
 
@@ -61,14 +62,10 @@ const useMoodEntryMutation = (
     },
   });
 
-// const fetchMoodEntriesI
-// const useGetMoodEntry = () =>
-//   useQuery: ["mood-entries"],
-//   queryFn:
-
 export function MoodCalendar() {
   const [moodEntries, setMoodEntries] = useState<MoodEntry[]>([]);
   const getMoodEntriesInDay = useMoodEntryMutation(setMoodEntries);
+  const monthlyMoodSummary = useMonthlyMoodSummary();
 
   const dailyMoods: Record<string, number> = {
     "2025-09-05": 5,
@@ -80,7 +77,10 @@ export function MoodCalendar() {
     const dateKey = date.toISOString().split("T")[0];
     if (!dateKey) return "/emojis/unknown_face.svg";
 
-    const avgMood: number = dailyMoods[dateKey];
+    const dayNum = parseInt(dateKey?.substr(8, 9));
+    if (!dayNum) return "/emojis/unknown_face.svg";
+
+    const avgMood = monthlyMoodSummary.data?.days[dayNum - 1]?.avgMood;
     if (!avgMood) return "/emojis/unknown_face.svg";
 
     if (avgMood <= 1) {
@@ -126,7 +126,7 @@ export function MoodCalendar() {
 
   return (
     <div>
-      {moodEntries.length == 0 ? (
+      {moodEntries.length == 0 && monthlyMoodSummary.isSuccess ? (
         <Calendar
           className="p-4"
           tileClassName="rounded-lg"
