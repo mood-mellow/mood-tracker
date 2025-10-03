@@ -18,6 +18,7 @@ import React, { useEffect, useState } from "react";
 import { ReviewChart } from "~/components/reviewChart";
 import { CommonMoodsCard } from "~/components/commonMoods";
 import { CommonActivitiesCard } from "~/components/commonActivities";
+import { MoodSelector } from "~/components/moodSelector";
 
 export default function DashboardPage() {
   const [isReady, setIsReady] = useState(false);
@@ -50,6 +51,8 @@ export default function DashboardPage() {
         >
           Log Out
         </Button> */}
+
+        <MoodSelector />
 
         <MoodEntryForm />
 
