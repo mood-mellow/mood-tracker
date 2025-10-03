@@ -21,9 +21,11 @@ const fetchMoodSummaryData = async (): Promise<MoodSummary> => {
   );
 };
 
-const fetchMonthlyMoodSummaryData = async (): Promise<MoodSummary> => {
+const fetchMonthlyMoodSummaryData = async (
+  offset = 0,
+): Promise<MoodSummary> => {
   return await apiFetch<MoodSummary>(
-    "http://localhost:8080/mood-summary/monthly",
+    `http://localhost:8080/mood-summary/monthly?offSet=${offset}`,
   );
 };
 
@@ -34,9 +36,9 @@ export const useMoodSummary = () => {
   });
 };
 
-export const useMonthlyMoodSummary = () => {
+export const useMonthlyMoodSummary = (offset: number) => {
   return useQuery({
-    queryKey: ["monthly-mood-summary"],
-    queryFn: fetchMonthlyMoodSummaryData,
+    queryKey: ["monthly-mood-summary", offset],
+    queryFn: () => fetchMonthlyMoodSummaryData(offset),
   });
 };
