@@ -10,7 +10,6 @@ import { useMonthlyMoodSummary } from "~/hooks/moodSummaryHooks";
 import { useMoodEntryMutation } from "~/hooks/moodEntryHooks";
 import { Button } from "~/components/ui/button";
 import { MoodEntryCard } from "./moodEntryCard";
-import { Skeleton } from "./ui/skeleton";
 
 enum MoodCalendarViews {
   Calendar,
@@ -25,15 +24,15 @@ export function MoodCalendar() {
   const [monthOffset, setMonthOffset] = useState(0);
   const monthlyMoodSummary = useMonthlyMoodSummary(monthOffset);
 
-  const getMoodEmojiSvgSrc = (date: Date): string => {
+  const getMoodEmojiSvgSrc = (date: Date): string | undefined => {
     const dateKey = date.toISOString().split("T")[0];
-    if (!dateKey) return "/emojis/unknown_face.svg";
+    if (!dateKey) return undefined;
 
     const dayNum = parseInt(dateKey?.substr(8, 9));
-    if (!dayNum) return "/emojis/unknown_face.svg";
+    if (!dayNum) return undefined;
 
     const avgMood = monthlyMoodSummary.data?.days[dayNum - 1]?.avgMood;
-    if (!avgMood) return "/emojis/unknown_face.svg";
+    if (!avgMood) return undefined;
 
     if (avgMood <= 1) {
       return "/emojis/pouting_face.svg";
@@ -51,7 +50,11 @@ export function MoodCalendar() {
       return "/emojis/smiling_face_hearts.svg";
     }
 
-    return "/emojis/unknown_face.svg";
+    return undefined;
+  };
+
+  const NoEmojiTile = () => {
+    return <div className="bg-accent h-[40px] w-[40px] rounded-full" />;
   };
 
   const emojiTileContent = ({ date, view }: { date: Date; view: View }) => {
@@ -59,25 +62,29 @@ export function MoodCalendar() {
     if (view === "month") {
       const today = new Date();
       const isCurrentDay = isSameDay(date, today);
-      const emojiSrc: string = getMoodEmojiSvgSrc(date);
+      const emojiSrc: string | undefined = getMoodEmojiSvgSrc(date);
       if (emojiSrc) {
         return (
           <Image
+            priority
+            loading="eager"
             src={emojiSrc}
             height={40}
             width={40}
-            alt="test"
-            className={
+            alt="mood emoji"
+            className={`transition-opacity duration-500 ease-in-out ${
               isCurrentDay ? "rounded-full border-5 border-purple-400" : ""
-            }
+            }`}
+            style={{ opacity: 0 }}
+            onLoadingComplete={(img) => {
+              img.style.opacity = "1";
+            }}
           />
         );
+      } else {
+        return <NoEmojiTile />;
       }
     }
-  };
-
-  const loadingTile = () => {
-    return <Skeleton className="h-[40px] w-[40px] rounded-full" />;
   };
 
   return (
@@ -98,7 +105,7 @@ export function MoodCalendar() {
           className="p-4"
           tileClassName="rounded-lg"
           tileContent={
-            monthlyMoodSummary.isSuccess ? emojiTileContent : loadingTile
+            monthlyMoodSummary.isSuccess ? emojiTileContent : NoEmojiTile
           }
           onClickDay={(day) => {
             moodEntriesInDay.mutate(day);
