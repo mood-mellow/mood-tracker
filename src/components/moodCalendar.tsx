@@ -3,13 +3,14 @@
 import Calendar from "react-calendar";
 import "~/styles/moodCalendar.css";
 import Image from "next/image";
-import { isSameDay } from "date-fns";
+import { differenceInMonths, isSameDay, startOfMonth } from "date-fns";
 import { useState } from "react";
 import type { View } from "react-calendar/dist/shared/types.js";
 import { useMonthlyMoodSummary } from "~/hooks/moodSummaryHooks";
 import { useMoodEntryMutation } from "~/hooks/moodEntryHooks";
 import { Button } from "~/components/ui/button";
 import { MoodEntryCard } from "./moodEntryCard";
+import { Skeleton } from "./ui/skeleton";
 
 enum MoodCalendarViews {
   Calendar,
@@ -18,10 +19,11 @@ enum MoodCalendarViews {
 
 export function MoodCalendar() {
   const moodEntriesInDay = useMoodEntryMutation();
-  const monthlyMoodSummary = useMonthlyMoodSummary();
   const [view, setView] = useState<MoodCalendarViews>(
     MoodCalendarViews.Calendar,
   );
+  const [monthOffset, setMonthOffset] = useState(0);
+  const monthlyMoodSummary = useMonthlyMoodSummary(monthOffset);
 
   const getMoodEmojiSvgSrc = (date: Date): string => {
     const dateKey = date.toISOString().split("T")[0];
@@ -74,25 +76,45 @@ export function MoodCalendar() {
     }
   };
 
+  const loadingTile = () => {
+    return <Skeleton className="h-[40px] w-[40px] rounded-full" />;
+  };
+
   return (
     <div>
-      {view == MoodCalendarViews.Calendar && monthlyMoodSummary.isSuccess ? (
+      {view == MoodCalendarViews.Calendar ? (
         <Calendar
+          activeStartDate={startOfMonth(
+            new Date(new Date().setMonth(new Date().getMonth() - monthOffset)),
+          )}
+          onActiveStartDateChange={({ activeStartDate }) => {
+            if (!activeStartDate) return;
+            const newOffset = differenceInMonths(
+              startOfMonth(new Date()),
+              startOfMonth(activeStartDate),
+            );
+            setMonthOffset(newOffset);
+          }}
           className="p-4"
           tileClassName="rounded-lg"
-          tileContent={emojiTileContent}
+          tileContent={
+            monthlyMoodSummary.isSuccess ? emojiTileContent : loadingTile
+          }
           onClickDay={(day) => {
             moodEntriesInDay.mutate(day);
             setView(MoodCalendarViews.Entries);
           }}
           prev2Label={null}
           next2Label={null}
+          showNeighboringMonth={false}
         />
       ) : (
         <div>
-          <Button onClick={() => setView(MoodCalendarViews.Calendar)}>
-            Back
-          </Button>
+          {view == MoodCalendarViews.Entries && (
+            <Button onClick={() => setView(MoodCalendarViews.Calendar)}>
+              Back
+            </Button>
+          )}
 
           {view == MoodCalendarViews.Entries &&
             moodEntriesInDay.data?.map((moodEntry) => {
