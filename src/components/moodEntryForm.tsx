@@ -39,6 +39,7 @@ import {
 
 import { ColorPicker } from "./ui/color-picker";
 import { createMoodEntry, moodEntryFormSchema } from "~/hooks/moodEntryHooks";
+import { MoodSelector } from "./moodSelector";
 
 const formSchema = moodEntryFormSchema;
 
@@ -51,8 +52,6 @@ const MOOD_OPTIONS = [
   { value: "sad", label: "Sad" },
   { value: "very_sad", label: "Very Sad" },
   { value: "angry", label: "Angry" },
-  // { value: "anxious", label: "Anxious" },
-  // { value: "excited", label: "Excited" },
 ];
 
 const EMOJI_OPTIONS = ["😄", "😊", "😐", "😢", "😭", "😠", "😰", "🤩"];
@@ -141,7 +140,7 @@ export default function MoodEntryForm() {
 
   return (
     <div className="flex h-full min-h-[50vh] w-full flex-col items-center justify-center px-4">
-      <Card className="mx-auto max-w-md">
+      <Card className="mx-auto w-full max-w-[clamp(300px,80%,700px)]">
         <CardHeader>
           <CardTitle className="text-2xl">Add Mood Entry</CardTitle>
           <CardDescription>
@@ -160,24 +159,10 @@ export default function MoodEntryForm() {
                   <FormItem>
                     <FormLabel>How are you feeling?</FormLabel>
                     <FormControl>
-                      <Select
-                        onValueChange={(value) => {
-                          field.onChange(value);
-                          setSelectedMood(value);
-                        }}
+                      <MoodSelector
                         value={field.value}
-                      >
-                        <SelectTrigger>
-                          <SelectValue placeholder="Select your mood" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {MOOD_OPTIONS.map((mood) => (
-                            <SelectItem key={mood.value} value={mood.value}>
-                              {mood.label}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
+                        onChange={field.onChange}
+                      />
                     </FormControl>
                     <FormMessage />
                   </FormItem>

@@ -39,21 +39,6 @@ export default function DashboardPage() {
         }`}
         style={{ backgroundImage: "url(/bbblurry.svg)" }}
       >
-        {/*<TestApiCall />*/}
-
-        {/*
-        <Button
-          onClick={async () => {
-            console.log("test");
-            await signOut();
-            redirect("/");
-          }}
-        >
-          Log Out
-        </Button> */}
-
-        <MoodSelector />
-
         <MoodEntryForm />
 
         <div className="dashboard-widgets-container gap-x-8 gap-y-6 md:p-12">

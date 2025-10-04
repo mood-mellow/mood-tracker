@@ -73,7 +73,7 @@ export function MoodCalendar() {
             width={40}
             alt="mood emoji"
             className={`transition-opacity duration-500 ease-in-out ${
-              isCurrentDay ? "rounded-full border-5 border-purple-400" : ""
+              isCurrentDay ? "rounded-full border-4 border-purple-400" : ""
             }`}
             style={{ opacity: 0 }}
             onLoadingComplete={(img) => {
