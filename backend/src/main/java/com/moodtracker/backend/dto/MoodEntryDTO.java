@@ -16,8 +16,6 @@ public class MoodEntryDTO {
     public MoodEntryDTO(MoodEntry entry) {
         this.id = entry.getId();
         this.mood = entry.getMood();
-        this.color = entry.getColor();
-        this.emoji = entry.getEmoji();
         this.journalEntry = entry.getJournalEntry();
         this.timestamp = entry.getTimestamp();
     }

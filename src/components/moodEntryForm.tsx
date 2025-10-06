@@ -29,33 +29,10 @@ import { useState, useEffect } from "react";
 import { type ActivityTag, useActivityTags } from "~/hooks/activityTagHooks";
 import { X } from "lucide-react";
 import { ActivityTagsPopover } from "~/components/activityTags/activityTagsPopover";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "~/components/ui/select";
-
-import { ColorPicker } from "./ui/color-picker";
 import { createMoodEntry, moodEntryFormSchema } from "~/hooks/moodEntryHooks";
+import { MoodSelector } from "./moodSelector";
 
 const formSchema = moodEntryFormSchema;
-
-// Mood options with emojis
-const MOOD_OPTIONS = [
-  { value: "very_happy", label: "Very Happy" },
-  { value: "happy", label: "Happy" },
-  { value: "pleased", label: "Pleased" },
-  { value: "neutral", label: "Neutral" },
-  { value: "sad", label: "Sad" },
-  { value: "very_sad", label: "Very Sad" },
-  { value: "angry", label: "Angry" },
-  // { value: "anxious", label: "Anxious" },
-  // { value: "excited", label: "Excited" },
-];
-
-const EMOJI_OPTIONS = ["😄", "😊", "😐", "😢", "😭", "😠", "😰", "🤩"];
 
 export default function MoodEntryForm() {
   const { data: activityTags = [] } = useActivityTags();
@@ -88,10 +65,8 @@ export default function MoodEntryForm() {
     resolver: zodResolver(formSchema),
     defaultValues: {
       mood: "",
-      emoji: "",
       journal: "",
       activityTagIds: [],
-      color: "#51976b",
     },
   });
 
@@ -141,7 +116,7 @@ export default function MoodEntryForm() {
 
   return (
     <div className="flex h-full min-h-[50vh] w-full flex-col items-center justify-center px-4">
-      <Card className="mx-auto max-w-md">
+      <Card className="mx-auto w-full max-w-[clamp(300px,80%,700px)]">
         <CardHeader>
           <CardTitle className="text-2xl">Add Mood Entry</CardTitle>
           <CardDescription>
@@ -160,84 +135,10 @@ export default function MoodEntryForm() {
                   <FormItem>
                     <FormLabel>How are you feeling?</FormLabel>
                     <FormControl>
-                      <Select
-                        onValueChange={(value) => {
-                          field.onChange(value);
-                          setSelectedMood(value);
-                        }}
+                      <MoodSelector
                         value={field.value}
-                      >
-                        <SelectTrigger>
-                          <SelectValue placeholder="Select your mood" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {MOOD_OPTIONS.map((mood) => (
-                            <SelectItem key={mood.value} value={mood.value}>
-                              {mood.label}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              {/* Emoji Selection */}
-              <FormField
-                control={form.control}
-                name="emoji"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Pick an emoji</FormLabel>
-                    <FormControl>
-                      <Select
-                        onValueChange={field.onChange}
-                        value={field.value}
-                      >
-                        <SelectTrigger>
-                          <SelectValue placeholder="Select your emoji" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {EMOJI_OPTIONS.map((emoji) => (
-                            <SelectItem key={emoji} value={emoji}>
-                              {emoji}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              {/* Color Selection */}
-              <FormField
-                control={form.control}
-                name="color"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>
-                      Pick a color that represents your mood
-                    </FormLabel>
-                    <FormControl>
-                      <div className="flex items-center gap-3">
-                        <ColorPicker
-                          onChange={(v) => {
-                            if (typeof v === "string") {
-                              field.onChange(v);
-                            }
-                          }}
-                          value={field.value}
-                        />
-                        {field.value && (
-                          <p className="text-muted-foreground text-sm">
-                            {field.value}
-                          </p>
-                        )}
-                      </div>
+                        onChange={field.onChange}
+                      />
                     </FormControl>
                     <FormMessage />
                   </FormItem>

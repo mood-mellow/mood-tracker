@@ -53,8 +53,6 @@ public class MoodEntryController {
 
 		MoodEntry moodEntry = new MoodEntry();
 		moodEntry.setMood(dto.getMood());
-		moodEntry.setEmoji(dto.getEmoji());
-		moodEntry.setColor(dto.getColor());
 		moodEntry.setJournalEntry(dto.getJournalEntry());
 		moodEntry.setUser(user);
 		moodEntry.setActivityTags(tags);

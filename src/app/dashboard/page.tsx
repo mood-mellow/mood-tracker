@@ -1,9 +1,6 @@
 "use client";
 
 import { signOut } from "aws-amplify/auth";
-import { Button } from "~/components/ui/button";
-import { redirect } from "next/navigation";
-import { ActivityTagsPopover } from "~/components/activityTags/activityTagsPopover";
 import MoodEntryForm from "~/components/moodEntryForm";
 import { Navbar01 as Navbar } from "~/components/ui/shadcn-io/navbar-01";
 import "~/styles/dashboard.css";
@@ -38,19 +35,6 @@ export default function DashboardPage() {
         }`}
         style={{ backgroundImage: "url(/bbblurry.svg)" }}
       >
-        {/*<TestApiCall />*/}
-
-        {/*
-        <Button
-          onClick={async () => {
-            console.log("test");
-            await signOut();
-            redirect("/");
-          }}
-        >
-          Log Out
-        </Button> */}
-
         <MoodEntryForm />
 
         <div className="dashboard-widgets-container gap-x-8 gap-y-6 md:p-12">
