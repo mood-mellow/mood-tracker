@@ -1,6 +1,6 @@
 import Image from "next/image";
 
-const moods = [
+export const moods = [
   {
     src: "/emojis/pouting_face.svg",
     alt: "pouting face",

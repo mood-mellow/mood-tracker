@@ -1,7 +1,8 @@
 "use client";
 
 import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";
-import { useMoodSummary, type MoodSummary } from "~/hooks/moodSummaryHooks";
+import { useMoodSummary } from "~/hooks/moodSummaryHooks";
+import { Badge } from "./ui/badge";
 
 export function CommonActivitiesCard() {
   const { data, isPending, isError, error } = useMoodSummary();
@@ -14,10 +15,10 @@ export function CommonActivitiesCard() {
         {data.mostCommonActivities.map((activity, idx) => {
           const firstEntry = Object.entries(activity)[0];
           if (!firstEntry) return null; // guard against empty objects
-          const [key, value] = firstEntry;
+          const [key] = firstEntry;
           return (
             <p key={idx}>
-              {key}: {value}
+              <Badge variant="outline">{key}</Badge>
             </p>
           );
         })}
