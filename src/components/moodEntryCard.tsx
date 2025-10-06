@@ -1,17 +1,19 @@
 import { Card, CardContent, CardTitle } from "./ui/card";
 
+const localTimezoneId = Intl.DateTimeFormat().resolvedOptions().timeZone;
+
 const dateFormatter = new Intl.DateTimeFormat("en-US", {
   month: "long",
   day: "numeric",
   year: "numeric",
-  timeZone: "America/New_York",
+  timeZone: localTimezoneId,
 });
 
 const timeFormatter = new Intl.DateTimeFormat("en-US", {
   hour: "2-digit",
   minute: "2-digit",
   hour12: true,
-  timeZone: "America/New_York",
+  timeZone: localTimezoneId,
 });
 
 export const MoodEntryCard = ({
