@@ -9,6 +9,7 @@ import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.format.annotation.DateTimeFormat;
 
 import java.time.LocalDate;
+import java.time.ZoneId;
 
 @RestController
 @RequestMapping("/mood-summary")
@@ -23,20 +24,20 @@ public class MoodSummaryController {
 	// week 0 will represent last 7 days, any increments represent preceding 7 days
 	@GetMapping("/weekly")
     public MoodSummaryResponse getWeeklySummary(
-        @RequestParam(defaultValue = "0") int offSet,
+        @RequestParam(defaultValue = "0") int offSet, @RequestParam ZoneId zone,
         Authentication authentication
 	) {
 		String userId = ((Jwt) authentication.getPrincipal()).getClaimAsString("sub");
-		return moodSummaryService.getWeeklySummary(userId, offSet);
+		return moodSummaryService.getWeeklySummary(userId, offSet, zone);
 	}
 
     @GetMapping("/monthly")
     public MoodSummaryResponse getMonthlySummary(
-            @RequestParam(defaultValue = "0") int offSet,
+            @RequestParam(defaultValue = "0") int offSet, @RequestParam ZoneId zone,
             Authentication authentication
     ) {
         String userId = ((Jwt) authentication.getPrincipal()).getClaimAsString("sub");
-        return moodSummaryService.getMonthlySummary(userId, offSet);
+        return moodSummaryService.getMonthlySummary(userId, offSet, zone);
     }
 
 	@GetMapping("/mood-summary/range")
@@ -45,10 +46,11 @@ public class MoodSummaryController {
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate end,
             @RequestParam(defaultValue = "custom") String periodType,
             @RequestParam(defaultValue = "0") int offSet,
+            @RequestParam ZoneId zone,
             Authentication authentication) {
 
         String userId = ((Jwt) authentication.getPrincipal()).getClaimAsString("sub");
 
-        return moodSummaryService.getSummaryForRange(userId, start, end, periodType, offSet);
+        return moodSummaryService.getSummaryForRange(userId, start, end, periodType, offSet, zone);
     }
 }

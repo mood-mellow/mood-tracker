@@ -29,17 +29,14 @@ public class MoodSummaryService {
      * weekOffset = 0 -> last 7 days ending today
      * weekOffset = 1 -> the preceding 7-day window, etc.
      */
-    public MoodSummaryResponse getWeeklySummary(String userId, int weekOffset) {
-        LocalDate endDate = LocalDate.now().minusWeeks(weekOffset); // inclusive
+    public MoodSummaryResponse getWeeklySummary(String userId, int weekOffset, ZoneId zone) {
+        LocalDate endDate = LocalDate.now(zone).minusWeeks(weekOffset); // inclusive
         LocalDate startDate = endDate.minusDays(6); // 7-day window
 
-        return getSummaryForRange(userId, startDate, endDate, "weekly", weekOffset);
+        return getSummaryForRange(userId, startDate, endDate, "weekly", weekOffset, zone);
     }
 
-    public MoodSummaryResponse getMonthlySummary(String userId, int monthOffset) {
-
-        ZoneId zone = ZoneId.of("America/New_York");
-
+    public MoodSummaryResponse getMonthlySummary(String userId, int monthOffset, ZoneId zone) {
         // monthOffset = 0 -> current month, 1 -> previous month, etc.
         LocalDate now = LocalDate.now(zone).minusMonths(monthOffset);
 
@@ -48,7 +45,7 @@ public class MoodSummaryService {
         // End at last day of the month
         LocalDate endDate = now.withDayOfMonth(now.lengthOfMonth());
 
-        return getSummaryForRange(userId, startDate, endDate, "monthly", monthOffset);
+        return getSummaryForRange(userId, startDate, endDate, "monthly", monthOffset, zone);
     }
 
     /*
@@ -59,10 +56,9 @@ public class MoodSummaryService {
             LocalDate startDate,
             LocalDate endDate,
             String periodType,
-            int offSet) {
-
-        ZoneId zone = ZoneId.of("America/New_York");
-
+            int offSet,
+            ZoneId zone
+    ) {
         // Convert to DateTime bounds (inclusive and fixes earlier issue)
         LocalDateTime startDateTime = startDate.atStartOfDay();
         LocalDateTime endDateTime = endDate.atTime(23, 59, 59, 999_999_999);

@@ -1,6 +1,10 @@
 import { useQuery } from "@tanstack/react-query";
 import { apiFetch } from "~/lib/apiClient";
 
+const localTimezoneId = encodeURIComponent(
+  Intl.DateTimeFormat().resolvedOptions().timeZone,
+);
+
 export interface MoodSummary {
   week: number;
   weeklyAvgMood: number;
@@ -17,7 +21,7 @@ export interface DayEntry {
 
 const fetchMoodSummaryData = async (): Promise<MoodSummary> => {
   return await apiFetch<MoodSummary>(
-    "http://localhost:8080/mood-summary/weekly",
+    `http://localhost:8080/mood-summary/weekly?zone=${localTimezoneId}`,
   );
 };
 
@@ -25,7 +29,7 @@ const fetchMonthlyMoodSummaryData = async (
   offset = 0,
 ): Promise<MoodSummary> => {
   return await apiFetch<MoodSummary>(
-    `http://localhost:8080/mood-summary/monthly?offSet=${offset}`,
+    `http://localhost:8080/mood-summary/monthly?offSet=${offset}&zone=${localTimezoneId}`,
   );
 };
 
