@@ -2,43 +2,43 @@ import Image from "next/image";
 
 const moods = [
   {
-    src: "emojis/pouting_face.svg",
+    src: "/emojis/pouting_face.svg",
     alt: "pouting face",
     value: "furious",
     color: "border-[#F8312F]",
   },
   {
-    src: "emojis/worried_face.svg",
+    src: "/emojis/worried_face.svg",
     alt: "worried face",
     value: "fearful",
     color: "border-[#15DE2D]",
   },
   {
-    src: "emojis/slightly_frowning_face.svg",
+    src: "/emojis/slightly_frowning_face.svg",
     alt: "slightly frowning face",
     value: "sad",
     color: "border-[#2D9EFF]",
   },
   {
-    src: "emojis/neutral_face.svg",
+    src: "/emojis/neutral_face.svg",
     alt: "neutral face",
     value: "neutral",
     color: "border-[#FFB02E]",
   },
   {
-    src: "emojis/slightly_smiling_face.svg",
+    src: "/emojis/slightly_smiling_face.svg",
     alt: "slightly smiling face",
     value: "good",
     color: "border-[#F7E187]",
   },
   {
-    src: "emojis/smiling_face_smiling_eyes.svg",
+    src: "/emojis/smiling_face_smiling_eyes.svg",
     alt: "smiling face with smiling eyes",
     value: "great",
     color: "border-[#FBA888]",
   },
   {
-    src: "emojis/smiling_face_hearts.svg",
+    src: "/emojis/smiling_face_hearts.svg",
     alt: "smiling face with hearts",
     value: "loving",
     color: "border-[#FF8EF7]",
