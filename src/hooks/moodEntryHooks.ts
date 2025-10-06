@@ -15,7 +15,6 @@ export interface MoodEntry {
 
 export const moodEntryFormSchema = z.object({
   mood: z.string().min(1, { message: "Please select a mood" }),
-  emoji: z.string().min(1, { message: "Please select an emoji" }),
   journal: z
     .string()
     .min(1, { message: "Please write something in your journal" }),
@@ -23,7 +22,6 @@ export const moodEntryFormSchema = z.object({
     .string()
     .array()
     .min(1, { message: "Please select an activity" }),
-  color: z.string().min(1, { message: "Please select a color" }),
 });
 
 export const createMoodEntry = async (
@@ -36,8 +34,6 @@ export const createMoodEntry = async (
       body: JSON.stringify({
         journalEntry: data.journal,
         mood: data.mood,
-        emoji: data.emoji,
-        color: data.color,
         activityTagIds: data.activityTagIds,
       }),
     },

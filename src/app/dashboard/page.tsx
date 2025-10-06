@@ -1,9 +1,6 @@
 "use client";
 
 import { signOut } from "aws-amplify/auth";
-import { Button } from "~/components/ui/button";
-import { redirect } from "next/navigation";
-import { ActivityTagsPopover } from "~/components/activityTags/activityTagsPopover";
 import MoodEntryForm from "~/components/moodEntryForm";
 import { Navbar01 as Navbar } from "~/components/ui/shadcn-io/navbar-01";
 import "~/styles/dashboard.css";
@@ -18,7 +15,6 @@ import React, { useEffect, useState } from "react";
 import { ReviewChart } from "~/components/reviewChart";
 import { CommonMoodsCard } from "~/components/commonMoods";
 import { CommonActivitiesCard } from "~/components/commonActivities";
-import { MoodSelector } from "~/components/moodSelector";
 
 export default function DashboardPage() {
   const [isReady, setIsReady] = useState(false);
