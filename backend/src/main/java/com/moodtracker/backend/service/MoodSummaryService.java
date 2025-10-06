@@ -37,8 +37,11 @@ public class MoodSummaryService {
     }
 
     public MoodSummaryResponse getMonthlySummary(String userId, int monthOffset) {
+
+        ZoneId zone = ZoneId.of("America/New_York");
+
         // monthOffset = 0 -> current month, 1 -> previous month, etc.
-        LocalDate now = LocalDate.now().minusMonths(monthOffset);
+        LocalDate now = LocalDate.now(zone).minusMonths(monthOffset);
 
         // Start at first day of the month
         LocalDate startDate = now.withDayOfMonth(1);
@@ -57,6 +60,9 @@ public class MoodSummaryService {
             LocalDate endDate,
             String periodType,
             int offSet) {
+
+        ZoneId zone = ZoneId.of("America/New_York");
+
         // Convert to DateTime bounds (inclusive and fixes earlier issue)
         LocalDateTime startDateTime = startDate.atStartOfDay();
         LocalDateTime endDateTime = endDate.atTime(23, 59, 59, 999_999_999);
@@ -69,7 +75,7 @@ public class MoodSummaryService {
 
         // Bucket entries by LocalDate
         Map<LocalDate, List<MoodEntry>> byDate = entries.stream()
-            .collect(Collectors.groupingBy(e -> LocalDate.ofInstant(e.getTimestamp(), ZoneId.systemDefault())));
+            .collect(Collectors.groupingBy(e -> LocalDate.ofInstant(e.getTimestamp(), zone)));
 
         List<MoodSummaryResponse.DaySummary> days = new ArrayList<>();
         List<Integer> allScores = new ArrayList<>();
