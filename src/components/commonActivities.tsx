@@ -11,28 +11,31 @@ export function CommonActivitiesCard() {
     if (isPending) return <div>Loading </div>;
     if (isError) return <div>Error</div>;
     return (
-      <>
+      <div className="py-2">
         {data.mostCommonActivities.map((activity, idx) => {
           const firstEntry = Object.entries(activity)[0];
           if (!firstEntry) return null; // guard against empty objects
           const [key] = firstEntry;
           return (
             <p key={idx}>
-              <Badge variant="outline">{key}</Badge>
+              <Badge
+                className="rounded-full px-4 py-2 text-[14px]"
+                variant="outline"
+              >
+                {key}
+              </Badge>
             </p>
           );
         })}
-      </>
+      </div>
     );
   };
 
   return (
     <>
       <Card>
-        <CardHeader>
-          <CardTitle>Top mood triggers (Activities)</CardTitle>
-        </CardHeader>
         <CardContent>
+          <CardTitle>Top mood triggers (Activities)</CardTitle>
           <ActivityList />
         </CardContent>
       </Card>

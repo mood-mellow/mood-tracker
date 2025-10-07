@@ -17,7 +17,7 @@ export function CommonMoodsCard() {
     if (isPending) return <div>Loading </div>;
     if (isError) return <div>Error</div>;
     return (
-      <>
+      <div className="py-2">
         {data.mostCommonMoods.map((mood, idx) => {
           const firstEntry = Object.entries(mood)[0];
           if (!firstEntry) return null; // guard against empty objects
@@ -27,21 +27,26 @@ export function CommonMoodsCard() {
             moodEmojiMap.get(emotion) ?? "/emojis/unknown_face.svg";
           return (
             <p key={idx}>
-              <Image src={emojiImgSrc} alt="" height={20} width={20} />: {count}
+              <Image
+                className="inline-block"
+                src={emojiImgSrc}
+                alt=""
+                height={32}
+                width={32}
+              />
+              : {count}
             </p>
           );
         })}
-      </>
+      </div>
     );
   };
 
   return (
     <>
       <Card>
-        <CardHeader>
-          <CardTitle>Most common moods</CardTitle>
-        </CardHeader>
         <CardContent>
+          <CardTitle>Most common moods</CardTitle>
           <MoodList />
         </CardContent>
       </Card>
