@@ -57,8 +57,7 @@ public class MoodSummaryService {
             LocalDate endDate,
             String periodType,
             int offSet,
-            ZoneId zone
-    ) {
+            ZoneId zone) {
         // Convert to DateTime bounds (inclusive and fixes earlier issue)
         LocalDateTime startDateTime = startDate.atStartOfDay();
         LocalDateTime endDateTime = endDate.atTime(23, 59, 59, 999_999_999);
@@ -71,7 +70,7 @@ public class MoodSummaryService {
 
         // Bucket entries by LocalDate
         Map<LocalDate, List<MoodEntry>> byDate = entries.stream()
-            .collect(Collectors.groupingBy(e -> LocalDate.ofInstant(e.getTimestamp(), zone)));
+                .collect(Collectors.groupingBy(e -> LocalDate.ofInstant(e.getTimestamp(), zone)));
 
         List<MoodSummaryResponse.DaySummary> days = new ArrayList<>();
         List<Integer> allScores = new ArrayList<>();
@@ -104,6 +103,7 @@ public class MoodSummaryService {
                     : dayScores.stream().mapToInt(Integer::intValue).average().orElse(0.0);
 
             // Activity counts
+            Map<String, Integer> dayActivityCounts = new HashMap<>();
             for (MoodEntry me : dayEntries) {
                 List<ActivityTag> tags = me.getActivityTags();
                 if (tags == null)
@@ -112,6 +112,7 @@ public class MoodSummaryService {
                     String activityName = tag.getLabel();
                     if (activityName == null)
                         activityName = "unknown";
+                    dayActivityCounts.merge(activityName, 1, Integer::sum);
                     activityCounts.merge(activityName, 1, Integer::sum);
                 }
             }
@@ -119,9 +120,8 @@ public class MoodSummaryService {
             days.add(new MoodSummaryResponse.DaySummary(
                     d.toString(), // YYYY-MM-DD
                     avgMood,
-                    activityCounts));
+                    dayActivityCounts));
         }
-
 
         List<Map.Entry<String, Integer>> mostCommonActivities = new ArrayList<>(activityCounts.entrySet());
         mostCommonActivities.sort(Map.Entry.comparingByValue()); // asc order
@@ -137,7 +137,8 @@ public class MoodSummaryService {
             mostCommonMoods.removeFirst();
         }
 
-        double averageMood = allScores.isEmpty() ? 0.0 : allScores.stream().mapToInt(Integer::intValue).average().orElse(0.0);
+        double averageMood = allScores.isEmpty() ? 0.0
+                : allScores.stream().mapToInt(Integer::intValue).average().orElse(0.0);
 
         return new MoodSummaryResponse(periodType, offSet, averageMood, mostCommonMoods, mostCommonActivities, days);
     }
@@ -160,7 +161,7 @@ public class MoodSummaryService {
             case "furious":
             case "annoyed":
             case "terrible":
-			case "angry":
+            case "angry":
             case "frustrated":
             case "mad":
                 return 1;
@@ -182,7 +183,7 @@ public class MoodSummaryService {
             case "meh":
             case "okay":
             case "ok":
-			case "bored":
+            case "bored":
             case "indifferent":
             case "composed":
             case "calm":
