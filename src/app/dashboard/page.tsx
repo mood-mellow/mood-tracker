@@ -63,7 +63,7 @@ export default function DashboardPage() {
           <Card className="review-container">
             <CardHeader>
               <CardTitle>Review</CardTitle>
-              <CardDescription>Your moods the last 7 days</CardDescription>
+              <CardDescription>Your moods for this month</CardDescription>
             </CardHeader>
             <CardContent className="flex gap-x-8">
               <ReviewChart />

@@ -21,7 +21,7 @@ export interface DayEntry {
 
 const fetchMoodSummaryData = async (): Promise<MoodSummary> => {
   return await apiFetch<MoodSummary>(
-    `http://localhost:8080/mood-summary/weekly?zone=${localTimezoneId}`,
+    `http://localhost:8080/mood-summary/monthly?offset=0&zone=${localTimezoneId}`,
   );
 };
 

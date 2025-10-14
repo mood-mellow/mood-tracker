@@ -24,7 +24,7 @@ import {
 import { Textarea } from "~/components/ui/textarea";
 import { Badge } from "~/components/ui/badge";
 // import { moodEntryFormSchema } from "~/lib/validation-schemas";
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useState, useEffect } from "react";
 import { type ActivityTag, useActivityTags } from "~/hooks/activityTagHooks";
 import { X } from "lucide-react";
@@ -35,6 +35,7 @@ import { MoodSelector } from "./moodSelector";
 const formSchema = moodEntryFormSchema;
 
 export default function MoodEntryForm() {
+  const queryClient = useQueryClient();
   const { data: activityTags = [] } = useActivityTags();
   const [selectedActivityTags, setSelectedActivityTags] = useState<
     ActivityTag[]
@@ -72,13 +73,14 @@ export default function MoodEntryForm() {
 
   const moodEntryMutation = useMutation({
     mutationFn: createMoodEntry,
-    onSuccess: (data) => {
+    onSuccess: async (data) => {
       toast.success("Mood entry saved successfully!");
       console.log("Mood entry created:", data);
       // Reset form after successful submission
       form.reset();
       setSelectedMood("");
       setSelectedActivityTags([]);
+      await queryClient.invalidateQueries({ queryKey: ["mood-summary"] });
     },
     onError: (error) => {
       toast.error("Failed to save mood entry.", {
