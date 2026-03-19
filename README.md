@@ -141,26 +141,26 @@ This app uses AWS Cognito for authentication through the Amplify Auth npm librar
 - [x] Basic project structure with Next.js and Spring Boot
 - [x] Database setup with PostgreSQL
 - [x] Docker containerization
-- [ ] Mood entry tracking with timestamps
-- [ ] Activity tag system for categorizing moods
-- [ ] RESTful API endpoints for mood entries
-- [ ] User dashboard for viewing mood history
+- [x] Mood entry tracking with timestamps
+- [x] Activity tag system for categorizing moods
+- [x] RESTful API endpoints for mood entries
+- [x] User dashboard for viewing mood history
 
 ### Frontend Features
 
 - [x] Responsive UI with Tailwind CSS
-- [ ] Mood entry form component
-- [ ] Mood history display
-- [ ] Activity tag selection interface
+- [x] Mood entry form component
+- [x] Mood history display
+- [x] Activity tag selection interface
 - [ ] Data visualization (charts/graphs)
-- [ ] User profile management
+- [x] User profile management
 
 ### DevOps & Deployment
 
 - [x] Docker Compose for local development
 - [x] AWS SAM Lambda Setup
 - [x] Environment-specific configurations
-- [ ] Production Docker configuration
+- [x] Production Docker configuration
 
 ### Authentication & Security
 
