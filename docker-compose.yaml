@@ -1,11 +1,13 @@
 services:
   web:
-    build: .
+    build:
+      context: .
+      dockerfile: frontend/Dockerfile
     container_name: mood-tracker-frontend
     ports:
       - "3000:3000" # Next.js
     volumes:
-      - .:/app
+      - ./frontend:/app
       - /app/node_modules # avoid overwriting node_modules with host's empty folder
     environment:
       - NODE_ENV=development
