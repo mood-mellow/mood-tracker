@@ -5,24 +5,24 @@
 
 # dependencies
 node_modules/
-/.pnp
+.pnp/
 .pnp.js
 
 # testing
 /coverage
 
 # database
-/prisma/db.sqlite
-/prisma/db.sqlite-journal
+prisma/db.sqlite/
+prisma/db.sqlite-journal/
 db.sqlite
 
 # next.js
-/.next/
-/out/
+.next/
+out/
 next-env.d.ts
 
 # production
-/build
+build/
 
 # misc
 .DS_Store
