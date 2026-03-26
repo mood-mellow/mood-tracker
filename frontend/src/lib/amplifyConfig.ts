@@ -1,9 +1,9 @@
 import type { ResourcesConfig } from "aws-amplify";
 
 const cognitoIds = {
-  userPoolId: process.env.NEXT_PUBLIC_AWS_USER_POOL_ID!,
-  userPoolClientId: process.env.NEXT_PUBLIC_AWS_USER_POOL_CLIENT_ID!,
-  identityPoolId: process.env.NEXT_PUBLIC_AWS_IDENTITY_POOL_ID!,
+  userPoolId: process.env.USER_POOL_ID!,
+  userPoolClientId: process.env.USER_POOL_CLIENT_ID!,
+  identityPoolId: process.env.IDENTITY_POOL_ID!,
 };
 
 const cognitoBehavior = {
