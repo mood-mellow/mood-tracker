@@ -35,6 +35,17 @@ export const handler = async (event, context) => {
 		clearTimeout(timer);
 		let parsedDbSecrets = JSON.parse(dbSecrets.SecretString);
 		console.log("after GetSecretValue");
+
+		client = new Client({
+			host: process.env.DB_HOST,
+			user: parsedDbSecrets.username,
+			password: parsedDbSecrets.password,
+			database: process.env.DB_NAME,
+			port: 5432,
+			ssl: {
+				rejectUnauthorized: false, // RDS cert is valid, but we'd need the CA bundle to verify it
+			},
+		});
 	} catch (e) {
 		clearTimeout(timer);
 		console.error("GetSecretValue failed:", e);
@@ -52,6 +63,18 @@ export const handler = async (event, context) => {
       username: ${username}
       \n
       `);
+
+	await client.connect();
+
+	// Insert the new user
+	await client.query(
+		`INSERT INTO "users" (id, email, username)
+           VALUES ($1, $2, $3)
+           ON CONFLICT (id) DO NOTHING`,
+		[id, email, username],
+	);
+	console.log("User inserted into database");
+	const result = await client.query(`SELECT * FROM users`);
 
 	return event; // Must return event for Cognito to continue
 };

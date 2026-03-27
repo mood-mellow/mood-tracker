@@ -119,9 +119,20 @@ resource "aws_security_group" "vpcendpoint_sg" {
   description = "Secrets Manager VPC endpoint security group"
 }
 
+resource "aws_security_group" "rds_sg" {
+  vpc_id      = aws_vpc.main.id
+  description = "RDS security group"
+}
+
+resource "aws_db_subnet_group" "main" {
+  name       = "main-db-subnet-group"
+  subnet_ids = [aws_subnet.subnet.id, aws_subnet.subnet_2.id]
+}
 
 
-# --- Lambda SG Rules ---
+
+# --- Security Group rules ---
+# lambda sg rules
 resource "aws_security_group_rule" "lambda_egress_to_endpoint" {
   type                     = "egress"
   from_port                = 443
@@ -132,9 +143,17 @@ resource "aws_security_group_rule" "lambda_egress_to_endpoint" {
   description              = "Allow HTTPS out to Secrets Manager VPC endpoint"
 }
 
+resource "aws_security_group_rule" "lambda_egress_to_rds" {
+  type                     = "egress"
+  from_port                = 5432
+  to_port                  = 5432
+  protocol                 = "tcp"
+  security_group_id        = aws_security_group.lambda_sg.id
+  source_security_group_id = aws_security_group.rds_sg.id
+  description              = "Allow Postgres out to RDS"
+}
 
-
-# --- VPC Endpoint SG Rules ---
+# vpc endpoint sg rules
 resource "aws_security_group_rule" "endpoint_ingress_from_lambda" {
   type                     = "ingress"
   from_port                = 443
@@ -153,6 +172,17 @@ resource "aws_security_group_rule" "endpoint_egress_all" {
   security_group_id = aws_security_group.vpcendpoint_sg.id
   cidr_blocks       = ["0.0.0.0/0"]
   description       = "Allow all outbound (required for endpoint ENI responses)"
+}
+
+# rds sg rules
+resource "aws_security_group_rule" "rds_ingress_from_lambda" {
+  type                     = "ingress"
+  from_port                = 5432
+  to_port                  = 5432
+  protocol                 = "tcp"
+  security_group_id        = aws_security_group.rds_sg.id
+  source_security_group_id = aws_security_group.lambda_sg.id
+  description              = "Allow Postgres in from Lambda"
 }
 
 
@@ -183,12 +213,12 @@ resource "aws_lambda_function" "post_confirm" {
     security_group_ids = [aws_security_group.lambda_sg.id]
   }
 
-  # environment {
-  #   variables = {
-  #     DB_HOST = aws_db_instance.db.address
-  #     DB_NAME = var.db_name
-  #   }
-  # }
+  environment {
+    variables = {
+      DB_HOST = aws_db_instance.db.address
+      DB_NAME = var.db_name
+    }
+  }
 }
 
 
@@ -314,6 +344,29 @@ resource "aws_lambda_permission" "allow_cognito" {
 
 
 
+# --- RDS ---
+resource "aws_db_instance" "db" {
+  allocated_storage    = 20
+  engine               = "postgres"
+  instance_class       = "db.t4g.micro"
+  multi_az = false
+
+  db_name  = var.db_name
+  username = local.db_creds.username
+  password = local.db_creds.password
+
+  # no backups
+  skip_final_snapshot  = true
+  backup_retention_period = 0
+  deletion_protection = false
+
+  publicly_accessible = false
+  db_subnet_group_name   = aws_db_subnet_group.main.name
+  vpc_security_group_ids = [aws_security_group.rds_sg.id]
+}
+
+
+
 # --- Outputs ---
 output "user_pool_id" {
   value = aws_cognito_user_pool.main.id
@@ -325,4 +378,8 @@ output "identity_pool_id" {
 
 output "user_pool_client_id" {
   value = aws_cognito_user_pool_client.client.id
+}
+
+output "db_endpoint" {
+  value = aws_db_instance.db.endpoint
 }
