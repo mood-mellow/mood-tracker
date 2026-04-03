@@ -2,7 +2,11 @@ terraform {
   required_providers {
     aws = {
       source  = "hashicorp/aws"
-      version = "~> 5.47.0"
+      version = "6.37.0"
+    }
+    random = {
+      source = "opentofu/random"
+      version = "3.8.1"
     }
   }
 }
@@ -18,22 +22,39 @@ variable "db_name" {
   default     = "appdb"
   sensitive   = false
 }
-variable "db_username" {
-  type        = string
-  description = "RDS username"
-  default     = "postgres"
-  sensitive   = false
+
+resource "random_password" "db_password" {
+  length  = 16
+  special = true
+  override_special = "!#$%&*?"
 }
-variable "db_password" {
-  type        = string
-  description = "RDS password"
-  default     = "password123"
-  sensitive   = false
+
+# aws secrets for db credentials
+resource "aws_secretsmanager_secret" "db_credentials" {
+  name = "rds-db-credentials"
+  recovery_window_in_days = 0
 }
+resource "aws_secretsmanager_secret_version" "db_credentials_value" {
+  secret_id = aws_secretsmanager_secret.db_credentials.id
+
+  secret_string = jsonencode({
+    username = "dbuser"
+    password = random_password.db_password.result
+  })
+}
+locals {
+  db_creds = jsondecode(
+    aws_secretsmanager_secret_version.db_credentials_value.secret_string
+  )
+}
+
+
 
 # vpc for lambda to RDS
 resource "aws_vpc" "main" {
   cidr_block = "10.0.0.0/16"
+  enable_dns_support   = true
+  enable_dns_hostnames = true
 }
 
 # subnets
@@ -65,6 +86,33 @@ resource "aws_db_subnet_group" "db_subnets" {
 # security groups
 resource "aws_security_group" "lambda_sg" {
   vpc_id = aws_vpc.main.id
+
+  egress {
+    from_port   = 443
+    to_port     = 443
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+}
+
+# sg for the end point
+resource "aws_security_group" "vpcendpoint_sg" {
+  vpc_id = aws_vpc.main.id
+
+  ingress {
+    from_port       = 443
+    to_port         = 443
+    protocol        = "tcp"
+    cidr_blocks = ["10.0.0.0/16"]
+ 	# security_groups = [aws_security_group.lambda_sg.id]
+  }
+
+  egress {
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
 }
 
 # RDS security group to allow lambda access
@@ -79,15 +127,31 @@ resource "aws_security_group" "rds_sg" {
   }
 }
 
+# VPC endpoints
+resource "aws_vpc_endpoint" "secretsmanager_vpc_endpoint" {
+  vpc_id            = aws_vpc.main.id
+  service_name      = "com.amazonaws.us-east-2.secretsmanager"
+  vpc_endpoint_type = "Interface"
+  private_dns_enabled = true
+
+  subnet_ids = [
+    aws_subnet.subnet.id,
+    aws_subnet.subnet_2.id
+  ]
+
+  security_group_ids = [aws_security_group.vpcendpoint_sg.id]
+}
+
 # RDS
 resource "aws_db_instance" "db" {
   allocated_storage    = 20
   engine               = "postgres"
   instance_class       = "db.t4g.micro"
+  multi_az = false
 
-  db_name              = var.db_name
-  username             = var.db_username
-  password             = var.db_password
+  db_name  = var.db_name
+  username = local.db_creds.username
+  password = local.db_creds.password
 
   # no backups
   skip_final_snapshot  = true
@@ -115,16 +179,39 @@ resource "aws_iam_role" "lambda_exec" {
   })
 }
 
-# lamda logs
+# allow lambda to see the db_credentials in aws secrets manager
+resource "aws_iam_policy" "lambda_secrets_policy" {
+  name = "lambda-secrets-policy"
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Effect = "Allow"
+        Action = [
+          "secretsmanager:GetSecretValue"
+        ]
+        Resource = aws_secretsmanager_secret.db_credentials.arn
+      }
+    ]
+  })
+}
+
+# Attach the lambda policies to the lambda iam role
 resource "aws_iam_role_policy_attachment" "lambda_logs" {
   role       = aws_iam_role.lambda_exec.name
   policy_arn = "arn:aws:iam::aws:policy/service-role/AWSLambdaVPCAccessExecutionRole"
 }
 
+resource "aws_iam_role_policy_attachment" "lambda_secrets_attach" {
+  role       = aws_iam_role.lambda_exec.name
+  policy_arn = aws_iam_policy.lambda_secrets_policy.arn
+}
+
 # Package the Lambda function code
 data "archive_file" "lambda_create_user" {
   type        = "zip"
-  source_file = "${path.module}/lambda/index.js"
+  source_dir = "${path.module}/lambda"
   output_path = "${path.module}/lambda/function.zip"
 }
 
@@ -136,18 +223,19 @@ resource "aws_lambda_function" "post_confirm" {
   handler       = "index.handler"
   runtime = "nodejs20.x"
 
-  timeout = 10
+  timeout = 15
 
   vpc_config {
-    subnet_ids         = [aws_subnet.subnet.id]
+	subnet_ids = [
+	  aws_subnet.subnet.id,
+	  aws_subnet.subnet_2.id
+	]
     security_group_ids = [aws_security_group.lambda_sg.id]
   }
 
   environment {
     variables = {
       DB_HOST = aws_db_instance.db.address
-      DB_USER = var.db_username
-      DB_PASS = var.db_password
       DB_NAME = var.db_name
     }
   }
@@ -230,7 +318,7 @@ output "identity_pool_id" {
 	value = aws_cognito_identity_pool.main.id
 }
 
-output "client_id" {
+output "user_pool_client_id" {
   value = aws_cognito_user_pool_client.client.id
 }
 
