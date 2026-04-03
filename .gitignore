@@ -3,6 +3,9 @@
 # terraform
 .terraform/
 
+# lambda
+function.zip
+
 # dependencies
 node_modules/
 .pnp/
