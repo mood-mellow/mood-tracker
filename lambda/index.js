@@ -25,7 +25,7 @@ let parsedDbSecretsPromise = secretsManagerClient
 export const handler = async (event, context) => {
 	console.log("before GetSecretValue");
 	const controller = new AbortController();
-	const timer = setTimeout(() => controller.abort(), 5000); // 2s
+	const timer = setTimeout(() => controller.abort(), 5000);
 
 	try {
 		const dbSecrets = await secretsManagerClient.send(
@@ -35,6 +35,17 @@ export const handler = async (event, context) => {
 		clearTimeout(timer);
 		let parsedDbSecrets = JSON.parse(dbSecrets.SecretString);
 		console.log("after GetSecretValue");
+
+		client = new Client({
+			host: process.env.DB_HOST,
+			user: parsedDbSecrets.username,
+			password: parsedDbSecrets.password,
+			database: process.env.DB_NAME,
+			port: 5432,
+			ssl: {
+				rejectUnauthorized: false,
+			},
+		});
 	} catch (e) {
 		clearTimeout(timer);
 		console.error("GetSecretValue failed:", e);
@@ -53,39 +64,17 @@ export const handler = async (event, context) => {
       \n
       `);
 
-	let secrets;
-	try {
-		console.log("test 0");
-		secrets = await parsedDbSecretsPromise;
+	await client.connect();
 
-		console.log("test 0.5");
-		client = new Client({
-			host: process.env.DB_HOST,
-			user: secrets.username,
-			password: secrets.password,
-			database: process.env.DB_NAME,
-		});
-		console.log("test 1");
-		await client.connect();
-		console.log("test 2");
-
-		// Insert the new user
-		await client.query(
-			`INSERT INTO "users" (id, email, username)
+	// Insert the new user
+	await client.query(
+		`INSERT INTO "users" (id, email, username)
            VALUES ($1, $2, $3)
            ON CONFLICT (id) DO NOTHING`,
-			[id, email, username],
-		);
-		console.log("User inserted into database");
-		const result = await client.query(`SELECT * FROM users`);
+		[id, email, username],
+	);
+	console.log("User inserted into database");
+	const result = await client.query(`SELECT * FROM users`);
 
-		console.log("client is connected");
-		console.log(`All users: `, JSON.stringify(result.rows, null, 2));
-	} catch (error) {
-		console.error("Database error:", error);
-	} finally {
-		await client.end();
-	}
-
-	return event; // Must return event for Cognito to continue
+	return event;
 };
