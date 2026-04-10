@@ -27,12 +27,31 @@ variable "db_name" {
   sensitive   = false
 }
 
+variable "database_url" {
+  type = string
+  description = "connection string for the RDS database"
+  default = "postgres://${aws_db_instance.db.username}:${aws_db_instance.db.password}@${aws_db_instance.db.endpoint}/${aws_db_instance.db.db_name}"
+  sensitive = true
+}
+
 resource "random_password" "db_password" {
   length  = 16
   special = true
   override_special = "!#$%&*?"
 }
 
+
+
+# --- EC2 ---
+resource "aws_instance" "example" {
+  ami           = "ami-123"
+  instance_type = "t4g.nano"
+
+  user_data = <<-EOF
+    #!/bin/bash
+    echo "export DB_URL=${var.database_url}" >> /etc/profile
+  EOF
+}
 
 
 
@@ -46,6 +65,7 @@ resource "aws_secretsmanager_secret_version" "db_credentials_value" {
   secret_id = aws_secretsmanager_secret.db_credentials.id
 
   secret_string = jsonencode({
+  	db_url = "jdbc:postgresql://${aws_db_instance.db.address}/${aws_db_instance.db.db_name}"
     username = "dbuser"
     password = random_password.db_password.result
   })
@@ -198,7 +218,7 @@ data "archive_file" "lambda_create_user" {
 resource "aws_lambda_function" "post_confirm" {
   function_name = "post-confirmation-handler"
   filename      = data.archive_file.lambda_create_user.output_path
-  role 			= aws_iam_role.lambda_exec.arn
+  role 			= aws_iam_role.lambda_iam_role.arn
   handler       = "index.handler"
   runtime = "nodejs20.x"
   source_code_hash = data.archive_file.lambda_create_user.output_base64sha256
@@ -222,9 +242,26 @@ resource "aws_lambda_function" "post_confirm" {
 }
 
 
+# --- IAM Roles ---
 
-# --- IAM Role and Policy Attachment for lambda ---
-resource "aws_iam_role" "lambda_exec" {
+# IAM Role and Policy Attachment for Spring boot backend
+resource "aws_iam_role" "ec2_iam_role" {
+	name = "ec2-instance-role"
+
+	assume_role_policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [{
+      Effect = "Allow"
+      Principal = {
+        Service = "lambda.amazonaws.com"
+      }
+      Action = "sts:AssumeRole"
+    }]
+  })
+}
+
+# IAM Role and Policy Attachment for lambda
+resource "aws_iam_role" "lambda_iam_role" {
   name = "lambda-exec-role"
 
   assume_role_policy = jsonencode({
@@ -240,8 +277,8 @@ resource "aws_iam_role" "lambda_exec" {
 }
 
 # IAM policy to access secrets
-resource "aws_iam_policy" "lambda_secrets_policy" {
-  name = "lambda-secrets-policy"
+resource "aws_iam_policy" "secrets_policy" {
+  name = "secrets-policy"
 
   policy = jsonencode({
     Version = "2012-10-17"
@@ -257,15 +294,40 @@ resource "aws_iam_policy" "lambda_secrets_policy" {
   })
 }
 
-# Attach the lambda policies to the lambda iam role
+resource "aws_iam_policy" "rds_policy" {
+	name = "rds-policy"
+
+	policy = jsondecode({
+		Version: "2012-10-17",
+		Statement: [{
+			Effect: "Allow",
+			Action: [
+				"rds-db:connect"
+			],
+			Resource: aws_db_instance.db.arn
+		}]
+	})
+}
+
+# Attach iam policies to the iam roles
 resource "aws_iam_role_policy_attachment" "lambda_logs" {
-  role       = aws_iam_role.lambda_exec.name
+  role       = aws_iam_role.lambda_iam_role.name
   policy_arn = "arn:aws:iam::aws:policy/service-role/AWSLambdaVPCAccessExecutionRole"
 }
 
 resource "aws_iam_role_policy_attachment" "lambda_secrets_attach" {
-  role       = aws_iam_role.lambda_exec.name
-  policy_arn = aws_iam_policy.lambda_secrets_policy.arn
+  role       = aws_iam_role.lambda_iam_role.name
+  policy_arn = aws_iam_policy.secrets_policy.arn
+}
+
+resource "aws_iam_role_policy_attachment" "ec2_secrets_attach" {
+  role       = aws_iam_role.ec2_iam_role.name
+  policy_arn = aws_iam_policy.secrets_policy.arn
+}
+
+resource "aws_iam_role_policy_attachment" "ec2_rds_attach" {
+  role       = aws_iam_role.ec2_iam_role.name
+  policy_arn = aws_iam_policy.rds_policy.arn
 }
 
 
