@@ -38,9 +38,11 @@ resource "aws_iam_policy" "secrets_policy" {
     Version = "2012-10-17"
     Statement = [
       {
+        Sid = "SecretsManagerRead"
         Effect = "Allow"
         Action = [
-          "secretsmanager:GetSecretValue"
+          "secretsmanager:GetSecretValue",
+          "secretsmanager:DescribeSecret"
         ]
         Resource = aws_secretsmanager_secret.db_credentials.arn
       }

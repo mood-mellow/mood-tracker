@@ -28,9 +28,11 @@ resource "aws_secretsmanager_secret_version" "db_credentials_value" {
   secret_id = aws_secretsmanager_secret.db_credentials.id
 
   secret_string = jsonencode({
-  	db_url = "jdbc:postgresql://${aws_db_instance.db.address}/${aws_db_instance.db.db_name}"
-    username = "dbuser"
-    password = random_password.db_password.result
+  	db_url = "jdbc:postgresql://${aws_db_instance.db.address}/${var.db_name}"
+    db_username = var.db_username
+    db_password = random_password.db_password.result
+    db_name = var.db_name
+    user_pool_id = aws_cognito_user_pool.main.id
   })
 }
 
@@ -118,7 +120,7 @@ resource "aws_db_instance" "db" {
   multi_az = false
 
   db_name  = var.db_name
-  username = "dbuser"
+  username = var.db_username
   password = random_password.db_password.result
 
   # no backups
@@ -129,4 +131,14 @@ resource "aws_db_instance" "db" {
   publicly_accessible = false
   db_subnet_group_name   = aws_db_subnet_group.main.name
   vpc_security_group_ids = [aws_security_group.rds_sg.id]
+}
+
+resource "aws_security_group_rule" "rds_ingress_from_ec2" {
+  type                     = "ingress"
+  from_port                = 5432
+  to_port                  = 5432
+  protocol                 = "tcp"
+  security_group_id        = aws_security_group.rds_sg.id
+  source_security_group_id = aws_security_group.ec2_sg.id
+  description              = "Allow Postgres in from EC2"
 }

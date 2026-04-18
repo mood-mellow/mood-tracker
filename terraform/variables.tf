@@ -5,6 +5,13 @@ variable "db_name" {
   sensitive   = false
 }
 
+variable "db_username" {
+	type = string
+	description = "RDS database username"
+	default = "dbuser"
+	sensitive = false
+}
+
 resource "random_password" "db_password" {
   length  = 16
   special = true

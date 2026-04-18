@@ -12,9 +12,6 @@ const secretsManagerClient = new SecretsManagerClient({
 	region: "us-east-2",
 });
 let client;
-let parsedDbSecretsPromise = secretsManagerClient
-	.send(new GetSecretValueCommand({ SecretId: "rds-db-credentials" }))
-	.then((dbSecrets) => JSON.parse(dbSecrets.SecretString));
 
 /**
  *
@@ -24,30 +21,25 @@ let parsedDbSecretsPromise = secretsManagerClient
  */
 export const handler = async (event, context) => {
 	console.log("before GetSecretValue");
-	const controller = new AbortController();
-	const timer = setTimeout(() => controller.abort(), 5000);
 
 	try {
 		const dbSecrets = await secretsManagerClient.send(
 			new GetSecretValueCommand({ SecretId: "rds-db-credentials" }),
-			{ abortSignal: controller.signal },
 		);
-		clearTimeout(timer);
 		let parsedDbSecrets = JSON.parse(dbSecrets.SecretString);
 		console.log("after GetSecretValue");
 
 		client = new Client({
-			host: process.env.DB_HOST,
-			user: parsedDbSecrets.username,
-			password: parsedDbSecrets.password,
-			database: process.env.DB_NAME,
+			host: parsedDbSecrets.db_host,
+			user: parsedDbSecrets.db_username,
+			password: parsedDbSecrets.db_password,
+			database: parsedDbSecrets.db_name,
 			port: 5432,
 			ssl: {
 				rejectUnauthorized: false,
 			},
 		});
 	} catch (e) {
-		clearTimeout(timer);
 		console.error("GetSecretValue failed:", e);
 		// Decide whether to rethrow or just return event
 		return event;
@@ -75,6 +67,7 @@ export const handler = async (event, context) => {
 	);
 	console.log("User inserted into database");
 	const result = await client.query(`SELECT * FROM users`);
+	console.log("User selected query: " + result);
 
 	return event;
 };
