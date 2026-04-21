@@ -99,6 +99,16 @@ resource "aws_security_group_rule" "endpoint_egress_all" {
   description       = "Allow all outbound (required for endpoint ENI responses)"
 }
 
+resource "aws_security_group_rule" "endpoint_ingress_from_ec2" {
+  type                     = "ingress"
+  from_port                = 443
+  to_port                  = 443
+  protocol                 = "tcp"
+  security_group_id        = aws_security_group.vpcendpoint_sg.id
+  source_security_group_id = aws_security_group.ec2_sg.id
+  description              = "Allow HTTPS from EC2 to Secrets Manager VPC endpoint"
+}
+
 # rds sg rules
 resource "aws_security_group_rule" "rds_ingress_from_lambda" {
   type                     = "ingress"
