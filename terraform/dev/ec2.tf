@@ -8,8 +8,6 @@ resource "aws_instance" "docker_ec2" {
   vpc_security_group_ids = [aws_security_group.ec2_sg.id]
   iam_instance_profile = aws_iam_instance_profile.ec2_profile.name
 
-  depends_on = [ aws_db_instance.db, aws_secretsmanager_secret.db_credentials ]
-
   user_data = <<-EOF
 	#!/bin/bash
 	dnf update -y
@@ -17,8 +15,8 @@ resource "aws_instance" "docker_ec2" {
 	systemctl enable --now docker
 	usermod -aG docker ec2-user
 
-	docker pull yingjames/mood-tracker-backend:prod
-	docker run -d --name mood-tracker -p 80:8080 yingjames/mood-tracker-backend:prod
+	docker pull yingjames/mood-tracker-backend:dev
+	docker run -d --name mood-tracker -p 80:8080 yingjames/mood-tracker-backend:dev
     EOF
 }
 
@@ -65,14 +63,4 @@ resource "aws_security_group_rule" "ec2_egress_all" {
   cidr_blocks       = ["0.0.0.0/0"]
   security_group_id = aws_security_group.ec2_sg.id
   description       = "Allow all outbound traffic"
-}
-
-resource "aws_security_group_rule" "ec2_egress_https" {
-  type              = "egress"
-  from_port         = 443
-  to_port           = 443
-  protocol          = "tcp"
-  cidr_blocks       = ["0.0.0.0/0"]
-  security_group_id = aws_security_group.ec2_sg.id
-  description       = "Allow HTTPS outbound for SSM"
 }
