@@ -44,9 +44,16 @@ public class SecurityConfig {
     @Bean
     @Profile("dev")
     public SecurityFilterChain devFilterChain(HttpSecurity http) throws Exception {
-        http.httpBasic(Customizer.withDefaults());
+        http
+            .cors(Customizer.withDefaults())
+            .authorizeHttpRequests(auth -> auth
+                .anyRequest().permitAll()  // Allow all requests in dev
+            )
+            .httpBasic(Customizer.withDefaults())
+            .csrf(csrf -> csrf.disable());  // Disable CSRF for easier testing
         return http.build();
     }
+
     
     @Bean
     @Profile("prod")

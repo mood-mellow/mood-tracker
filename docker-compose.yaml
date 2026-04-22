@@ -28,9 +28,25 @@ services:
       DB_USERNAME: myuser
       DB_PASSWORD: mypassword
       SPRING_JPA_HIBERNATE_DDL_AUTO: update
+      SPRING_PROFILES_ACTIVE: prod
     depends_on:
       db:
         condition: service_healthy
+
+  backend-dev:
+    build:
+      context: .
+      dockerfile: backend/Dockerfile.dev
+    container_name: springboot-backend-dev
+    ports:
+      - "8081:8080"
+    volumes:
+      - ./backend/src:/app/src
+      - ./backend/build.gradle:/app/build.gradle
+      - ~/.gradle:/home/gradle/.gradle # Cache gradle dependencies
+    working_dir: /app
+    environment:
+      - SPRING_PROFILES_ACTIVE=dev
 
   db:
     image: postgres:15-alpine

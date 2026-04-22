@@ -9,10 +9,9 @@ import software.amazon.awssdk.services.dynamodb.DynamoDbClient;
 
 @Configuration
 public class DynamoDbConfig {
-    @Bean
-    public DynamoDbClient dynamoDbClient() {
-        return DynamoDbClient.builder()
-                .region(Region.US_EAST_1)
-                .build(); // credentials are picked up automatically
-    }
+
+	@Bean
+	public DynamoDbClient dynamoDbClient() {
+		return DynamoDbClient.builder().region(Region.US_EAST_2).build(); // credentials are picked up automatically
+	}
 }
