@@ -18,6 +18,26 @@ provider "aws" {
 
 
 
+# --- Secrets Manager ---
+resource "aws_secretsmanager_secret" "db_credentials" {
+  name = "rds-db-credentials"
+  recovery_window_in_days = 0
+}
+
+resource "aws_secretsmanager_secret_version" "db_credentials_value" {
+  secret_id = aws_secretsmanager_secret.db_credentials.id
+
+  secret_string = jsonencode({
+  	db_url = "jdbc:postgresql://${aws_db_instance.db.address}/${var.db_name}"
+    db_username = var.db_username
+    db_password = random_password.db_password.result
+    db_name = var.db_name
+    user_pool_id = aws_cognito_user_pool.main.id
+  })
+}
+
+
+
 # --- Cognito user pool ---
 resource "aws_cognito_user_pool" "main" {
   name = "user-pool"
@@ -44,7 +64,6 @@ resource "aws_cognito_user_pool" "main" {
     require_numbers   = true
     require_symbols   = true
   }
-
 }
 
 
@@ -75,7 +94,26 @@ resource "aws_cognito_identity_pool" "main" {
   }
 }
 
+# --- RDS ---
+resource "aws_db_instance" "db" {
+  allocated_storage    = 20
+  engine               = "postgres"
+  instance_class       = "db.t4g.micro"
+  multi_az = false
 
+  db_name  = var.db_name
+  username = var.db_username
+  password = random_password.db_password.result
+
+  # no backups
+  skip_final_snapshot  = true
+  backup_retention_period = 0
+  deletion_protection = false
+
+  publicly_accessible = false
+  db_subnet_group_name   = aws_db_subnet_group.main.name
+  vpc_security_group_ids = [aws_security_group.rds_sg.id]
+}
 
 resource "aws_security_group_rule" "rds_ingress_from_ec2" {
   type                     = "ingress"

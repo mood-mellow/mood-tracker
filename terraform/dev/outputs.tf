@@ -9,3 +9,7 @@ output "identity_pool_id" {
 output "user_pool_client_id" {
   value = aws_cognito_user_pool_client.client.id
 }
+
+output "db_endpoint" {
+  value = aws_db_instance.db.endpoint
+}

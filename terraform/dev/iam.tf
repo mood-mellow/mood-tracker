@@ -14,7 +14,40 @@ resource "aws_iam_role" "ec2_iam_role" {
   })
 }
 
+# IAM policy to access secrets
+resource "aws_iam_policy" "secrets_policy" {
+  name = "secrets-policy"
 
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Sid = "SecretsManagerRead"
+        Effect = "Allow"
+        Action = [
+          "secretsmanager:GetSecretValue",
+          "secretsmanager:DescribeSecret"
+        ]
+        Resource = aws_secretsmanager_secret.db_credentials.arn
+      }
+    ]
+  })
+}
+
+resource "aws_iam_policy" "rds_policy" {
+	name = "rds-policy"
+
+	policy = jsonencode({
+		Version: "2012-10-17",
+		Statement: [{
+			Effect: "Allow"
+			Action: [
+				"rds-db:connect"
+			]
+			Resource: aws_db_instance.db.arn
+		}]
+	})
+}
 
 # IAM policy for EC2 Instance Connect
 resource "aws_iam_policy" "ec2_instance_connect" {
@@ -40,6 +73,16 @@ resource "aws_iam_policy" "ec2_instance_connect" {
 resource "aws_iam_role_policy_attachment" "ec2_instance_connect_attach" {
   role       = aws_iam_role.ec2_iam_role.name
   policy_arn = aws_iam_policy.ec2_instance_connect.arn
+}
+
+resource "aws_iam_role_policy_attachment" "ec2_secrets_attach" {
+  role       = aws_iam_role.ec2_iam_role.name
+  policy_arn = aws_iam_policy.secrets_policy.arn
+}
+
+resource "aws_iam_role_policy_attachment" "ec2_rds_attach" {
+  role       = aws_iam_role.ec2_iam_role.name
+  policy_arn = aws_iam_policy.rds_policy.arn
 }
 
 resource "aws_iam_role_policy_attachment" "ssm_attach" {

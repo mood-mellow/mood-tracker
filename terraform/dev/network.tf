@@ -51,11 +51,32 @@ resource "aws_route_table_association" "public_assoc" {
 }
 
 
+# --- VPC endpoint ---
+resource "aws_vpc_endpoint" "secretsmanager_vpc_endpoint" {
+  vpc_id            = aws_vpc.main.id
+  service_name      = "com.amazonaws.us-east-2.secretsmanager"
+  vpc_endpoint_type = "Interface"
+  private_dns_enabled = true
+
+  subnet_ids = [
+    aws_subnet.public.id,
+    aws_subnet.subnet_2.id
+  ]
+
+  security_group_ids = [aws_security_group.vpcendpoint_sg.id]
+}
+
+
 
 # --- Security Groups ---
 resource "aws_security_group" "vpcendpoint_sg" {
   vpc_id      = aws_vpc.main.id
   description = "Secrets Manager VPC endpoint security group"
+}
+
+resource "aws_security_group" "rds_sg" {
+  vpc_id      = aws_vpc.main.id
+  description = "RDS security group"
 }
 
 resource "aws_db_subnet_group" "main" {
@@ -66,6 +87,8 @@ resource "aws_db_subnet_group" "main" {
 
 
 # --- Security Group Rules ---
+
+
 resource "aws_security_group_rule" "endpoint_egress_all" {
   type              = "egress"
   from_port         = 0
@@ -74,4 +97,29 @@ resource "aws_security_group_rule" "endpoint_egress_all" {
   security_group_id = aws_security_group.vpcendpoint_sg.id
   cidr_blocks       = ["0.0.0.0/0"]
   description       = "Allow all outbound (required for endpoint ENI responses)"
+}
+
+resource "aws_security_group_rule" "endpoint_ingress_from_ec2" {
+  type                     = "ingress"
+  from_port                = 443
+  to_port                  = 443
+  protocol                 = "tcp"
+  security_group_id        = aws_security_group.vpcendpoint_sg.id
+  source_security_group_id = aws_security_group.ec2_sg.id
+  description              = "Allow HTTPS from EC2 to Secrets Manager VPC endpoint"
+}
+
+data "http" "my_ip" {
+  url = "https://checkip.amazonaws.com"
+}
+
+# Allow for my ec2 to receive requests from public IP address
+resource "aws_security_group_rule" "ec2_ingress_http" {
+  type              = "ingress"
+  from_port         = 80
+  to_port           = 80
+  protocol          = "tcp"
+  cidr_blocks       = ["${chomp(data.http.my_ip.response_body)}/32"]
+  security_group_id = aws_security_group.ec2_sg.id
+  description       = "Allow HTTP to backend from current IP"
 }

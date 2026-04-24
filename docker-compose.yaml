@@ -43,6 +43,7 @@ services:
     volumes:
       - ./backend/src:/app/src
       - ./backend/build.gradle:/app/build.gradle
+      - ./backend/gradle.properties:/app/gradle.properties
       - ~/.gradle:/home/gradle/.gradle # Cache gradle dependencies
     working_dir: /app
     environment:

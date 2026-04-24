@@ -119,3 +119,18 @@ resource "aws_security_group_rule" "rds_ingress_from_lambda" {
   source_security_group_id = aws_security_group.lambda_sg.id
   description              = "Allow Postgres in from Lambda"
 }
+
+data "http" "my_ip" {
+  url = "https://checkip.amazonaws.com"
+}
+
+# Allow for my ec2 to receive requests from public IP address
+resource "aws_security_group_rule" "ec2_ingress_http" {
+  type              = "ingress"
+  from_port         = 80
+  to_port           = 80
+  protocol          = "tcp"
+  cidr_blocks       = ["${chomp(data.http.my_ip.response_body)}/32"]
+  security_group_id = aws_security_group.ec2_sg.id
+  description       = "Allow HTTP to backend from current IP"
+}

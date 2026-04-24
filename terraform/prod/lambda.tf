@@ -2,8 +2,8 @@
 # Package the Lambda function code
 data "archive_file" "lambda_create_user" {
   type        = "zip"
-  source_dir = "${path.module}/../lambda"
-  output_path = "${path.module}/../lambda/function.zip"
+  source_dir = "${path.module}/../../lambda"
+  output_path = "${path.module}/../../lambda/function.zip"
 }
 
 resource "aws_lambda_function" "post_confirm" {

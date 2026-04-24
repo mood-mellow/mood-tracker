@@ -8,6 +8,8 @@ resource "aws_instance" "docker_ec2" {
   vpc_security_group_ids = [aws_security_group.ec2_sg.id]
   iam_instance_profile = aws_iam_instance_profile.ec2_profile.name
 
+  depends_on = [ aws_db_instance.db, aws_secretsmanager_secret.db_credentials ]
+
   user_data = <<-EOF
 	#!/bin/bash
 	dnf update -y
@@ -15,8 +17,8 @@ resource "aws_instance" "docker_ec2" {
 	systemctl enable --now docker
 	usermod -aG docker ec2-user
 
-	docker pull yingjames/mood-tracker-backend:dev
-	docker run -d --name mood-tracker -p 80:8080 yingjames/mood-tracker-backend:dev
+	docker pull yingjames/mood-tracker-backend:prod
+	docker run -d --name mood-tracker -p 80:8080 yingjames/mood-tracker-backend:prod
     EOF
 }
 
