@@ -18,7 +18,7 @@ resource "aws_instance" "docker_ec2" {
 	usermod -aG docker ec2-user
 
 	docker pull yingjames/mood-tracker-backend:prod
-	docker run -d --name mood-tracker -p 80:8080 yingjames/mood-tracker-backend:prod
+	docker run -d --rm --name mood-tracker -p 80:8080 -e SPRING_PROFILES_ACTIVE=prod yingjames/mood-tracker-backend:prod
     EOF
 }
 

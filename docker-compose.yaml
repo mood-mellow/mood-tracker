@@ -21,12 +21,7 @@ services:
     container_name: springboot-backend
     ports:
       - "8080:8080"
-    env_file:
-      - .env
     environment:
-      DB_URL: jdbc:postgresql://db:5432/mydatabase
-      DB_USERNAME: myuser
-      DB_PASSWORD: mypassword
       SPRING_JPA_HIBERNATE_DDL_AUTO: update
       SPRING_PROFILES_ACTIVE: prod
     depends_on:
@@ -43,7 +38,6 @@ services:
     volumes:
       - ./backend/src:/app/src
       - ./backend/build.gradle:/app/build.gradle
-      - ./backend/gradle.properties:/app/gradle.properties
       - ~/.gradle:/home/gradle/.gradle # Cache gradle dependencies
     working_dir: /app
     environment:
