@@ -8,10 +8,8 @@ import software.amazon.awssdk.services.sns.SnsClient;
 @Configuration
 public class SnsConfig {
 
-    @Bean
-    public SnsClient snsClient() {
-        return SnsClient.builder()
-                .region(Region.US_EAST_1)
-                .build();
-    }
+	@Bean
+	public SnsClient snsClient() {
+		return SnsClient.builder().region(Region.US_EAST_2).build();
+	}
 }

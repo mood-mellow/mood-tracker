@@ -9,6 +9,7 @@ A full-stack mood tracking application built with Next.js, Spring Boot, and Post
 - **Database**: PostgreSQL
 - **Authentication**: AWS Cognito
 - **Containerization**: Docker & Docker Compose
+- **Infra As Code**: Terraform
 
 ## 🚀 Quick Start
 
@@ -23,22 +24,22 @@ A full-stack mood tracking application built with Next.js, Spring Boot, and Post
 
 1. **Clone the repository**
 
-   ```bash
-   git clone <repository-url>
-   cd mood-tracker
-   ```
+    ```bash
+    git clone <repository-url>
+    cd mood-tracker
+    ```
 
 2. **Environment Configuration**
 
-   ```bash
-   cp .env.example .env
-   # Edit .env with your AWS Amplify configuration
-   ```
+    ```bash
+    cp .env.example .env
+    # Edit .env with your AWS Amplify configuration
+    ```
 
 3. **Start the application**
-   ```bash
-   docker compose up --build
-   ```
+    ```bash
+    docker compose up --build
+    ```
 
 ## 🔗 Services
 
@@ -169,3 +170,22 @@ This app uses AWS Cognito for authentication through the Amplify Auth npm librar
 - [x] Protected routes in frontend
 - [x] JWT token validation in backend
 - [x] Secure API endpoints
+
+### Infra As Code
+
+1. Login and provide a profile called AdminAccess
+
+```
+aws sso login --profile AdminAccess
+```
+
+2. Init, plan, and apply using Terraform or OpenTofu
+   Switch to either the dev or prod directory based on what build you want to deploy
+
+```bash
+cd terraform/prod # or cd terraform/dev
+
+terraform init
+terraform plan
+terraform apply
+```

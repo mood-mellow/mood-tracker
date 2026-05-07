@@ -30,9 +30,9 @@ import { useMutation } from "@tanstack/react-query";
 import { registerFormSchema } from "~/lib/validation-schemas";
 import Image from "next/image";
 
-const formSchema = registerFormSchema;
+export const formSchema = registerFormSchema;
 
-async function signUpUser(values: z.infer<typeof formSchema>) {
+export async function signUpUser(values: z.infer<typeof formSchema>) {
   const { nextStep } = await signUp({
     username: values.email,
     password: values.password,

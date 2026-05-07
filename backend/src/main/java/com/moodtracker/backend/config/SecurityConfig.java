@@ -1,6 +1,7 @@
 package com.moodtracker.backend.config;
 
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Profile;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
@@ -41,7 +42,22 @@ public class SecurityConfig {
     }
 
     @Bean
-    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+    @Profile("dev")
+    public SecurityFilterChain devFilterChain(HttpSecurity http) throws Exception {
+        http
+            .cors(Customizer.withDefaults())
+            .authorizeHttpRequests(auth -> auth
+                .anyRequest().permitAll()  // Allow all requests in dev
+            )
+            .httpBasic(Customizer.withDefaults())
+            .csrf(csrf -> csrf.disable());  // Disable CSRF for easier testing
+        return http.build();
+    }
+
+    
+    @Bean
+    @Profile("prod")
+    public SecurityFilterChain prodFilterChain(HttpSecurity http) throws Exception {
         http
             .cors(Customizer.withDefaults())
             .authorizeHttpRequests(auth -> auth
